@@ -32,7 +32,7 @@ export function computeKpis(
     {
       id: 'k1',
       label: '관심상품 소비 총액',
-      value: `₩${totalInterest.toLocaleString('ko-KR')}`,
+      value: `${totalInterest.toLocaleString('ko-KR')}원`,
       delta: `${favorites.length}개 상품`,
       trend: 'flat',
       positive: true,
@@ -50,7 +50,7 @@ export function computeKpis(
     {
       id: 'k3',
       label: '할인 절약 금액',
-      value: totalSaved > 0 ? `₩${totalSaved.toLocaleString('ko-KR')}` : '₩0',
+      value: totalSaved > 0 ? `${totalSaved.toLocaleString('ko-KR')}원` : '0',
       delta: totalSaved > 0 ? '정가 대비 절약' : '할인 상품 없음',
       trend: totalSaved > 0 ? 'up' : 'flat',
       positive: totalSaved > 0,
@@ -139,7 +139,7 @@ export function computeInsights(
     insights.push({
       id: 'i-discount',
       title: `${pct}% 할인 상품이 있어요`,
-      detail: `"${bestDiscount.product.name}"이(가) 정가 대비 ${pct}% 할인 중입니다. 지금 구매 시 ₩${(bestDiscount.product.originalPrice! - bestDiscount.product.price).toLocaleString('ko-KR')} 절약할 수 있어요.`,
+      detail: `"${bestDiscount.product.name}"이(가) 정가 대비 ${pct}% 할인 중입니다. 지금 구매 시 ${(bestDiscount.product.originalPrice! - bestDiscount.product.price).toLocaleString('ko-KR')} 절약할 수 있어요.`,
       tone: 'positive',
     });
   }

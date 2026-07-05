@@ -22,6 +22,7 @@ function detectCategory(product: ProductItem): string {
 }
 
 type SortKey = 'latest' | 'price-asc' | 'price-desc' | 'ai-score' | 'discount';
+type MobileCols = 1 | 2 | 4;
 
 const SORT_OPTIONS: { key: SortKey; label: string }[] = [
   { key: 'latest', label: 'recent' },
@@ -32,7 +33,36 @@ const SORT_OPTIONS: { key: SortKey; label: string }[] = [
 ];
 
 function formatPrice(n: number) {
-  return '₩' + n.toLocaleString('ko-KR');
+  return n.toLocaleString('ko-KR');
+}
+
+function GridColIcon({ cols }: { cols: MobileCols }) {
+  if (cols === 1) return (
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
+      <rect x="1" y="1" width="12" height="5" rx="1" />
+      <rect x="1" y="8" width="12" height="5" rx="1" />
+    </svg>
+  );
+  if (cols === 2) return (
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
+      <rect x="1" y="1" width="5" height="5" rx="1" />
+      <rect x="8" y="1" width="5" height="5" rx="1" />
+      <rect x="1" y="8" width="5" height="5" rx="1" />
+      <rect x="8" y="8" width="5" height="5" rx="1" />
+    </svg>
+  );
+  return (
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
+      <rect x="0.5" y="1" width="2.5" height="5.5" rx="0.5" />
+      <rect x="3.83" y="1" width="2.5" height="5.5" rx="0.5" />
+      <rect x="7.17" y="1" width="2.5" height="5.5" rx="0.5" />
+      <rect x="10.5" y="1" width="2.5" height="5.5" rx="0.5" />
+      <rect x="0.5" y="7.5" width="2.5" height="5.5" rx="0.5" />
+      <rect x="3.83" y="7.5" width="2.5" height="5.5" rx="0.5" />
+      <rect x="7.17" y="7.5" width="2.5" height="5.5" rx="0.5" />
+      <rect x="10.5" y="7.5" width="2.5" height="5.5" rx="0.5" />
+    </svg>
+  );
 }
 
 function timeAgo(date: Date): string {
@@ -70,7 +100,7 @@ function ProductThumbnail({ product }: { product: ProductItem }) {
   );
 }
 
-function FavoriteCard({ item, onRemove }: { item: FavoriteItem; onRemove: () => void }) {
+function FavoriteCard({ item, onRemove, cols }: { item: FavoriteItem; onRemove: () => void; cols: MobileCols }) {
   const { product, savedAt } = item;
   const discountPct =
     product.originalPrice && product.originalPrice > product.price
@@ -79,6 +109,34 @@ function FavoriteCard({ item, onRemove }: { item: FavoriteItem; onRemove: () => 
   const isPriceUp = !!(product.originalPrice && product.originalPrice < product.price);
   const isSoldOut = product.shipping?.includes('품절');
 
+  /* ── 4컬럼 컴팩트 카드 (모바일 전용) ── */
+  if (cols === 4) {
+    return (
+      <article className="flex flex-col overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900">
+        <div className="relative aspect-square bg-zinc-50 dark:bg-zinc-800">
+          <ProductThumbnail product={product} />
+          {isSoldOut && (
+            <span className="absolute left-1 top-1 rounded bg-zinc-700 px-1 py-0.5 text-[8px] font-bold text-white">품절</span>
+          )}
+          {discountPct > 0 && (
+            <span className="absolute left-1 bottom-1 rounded bg-white/90 dark:bg-zinc-900/90 px-1 py-0.5 text-[8px] font-bold text-blue-500">-{discountPct}%</span>
+          )}
+          <button
+            onClick={onRemove}
+            className="absolute right-1 top-1 flex size-5 items-center justify-center rounded-full bg-white/80 dark:bg-zinc-900/80 text-zinc-400 hover:text-rose-500 transition-colors"
+          >
+            <X className="size-2.5" />
+          </button>
+        </div>
+        <div className="p-1.5 flex flex-col gap-0.5">
+          <p className="text-[10px] font-medium leading-tight line-clamp-2 text-zinc-800 dark:text-zinc-200">{product.name}</p>
+          <p className="text-[11px] font-bold tabular-nums text-zinc-900 dark:text-zinc-100">{formatPrice(product.price)}원</p>
+        </div>
+      </article>
+    );
+  }
+
+  /* ── 일반 카드 (1·2컬럼) ── */
   return (
     <article className="flex flex-col overflow-hidden rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 hover:shadow-md transition-shadow">
       {/* 이미지 영역 */}
@@ -125,7 +183,7 @@ function FavoriteCard({ item, onRemove }: { item: FavoriteItem; onRemove: () => 
         <div className="mt-auto flex items-end justify-between gap-2 pt-1">
           <div className="min-w-0">
             <p className="text-base font-bold text-zinc-900 dark:text-zinc-100 tabular-nums">
-              {formatPrice(product.price)}
+              {formatPrice(product.price)}원
             </p>
             <div className="flex items-center gap-1 text-xs">
               {discountPct > 0 && (
@@ -133,7 +191,7 @@ function FavoriteCard({ item, onRemove }: { item: FavoriteItem; onRemove: () => 
                   <TrendingDown className="size-3 shrink-0 text-blue-500" />
                   <span className="font-semibold text-blue-500">{discountPct}%</span>
                   <span className="text-zinc-400 line-through tabular-nums">
-                    {formatPrice(product.originalPrice!)}
+                    {formatPrice(product.originalPrice!)}원
                   </span>
                 </>
               )}
@@ -170,6 +228,7 @@ export default function WishlistPage() {
   const [activeCategory, setActiveCategory] = useState('전체');
   const [sortBy, setSortBy] = useState<SortKey>('latest');
   const [sortOpen, setSortOpen] = useState(false);
+  const [mobileCols, setMobileCols] = useState<MobileCols>(4);
 
   useEffect(() => {
     if (!loading && !user) router.replace('/login');
@@ -356,11 +415,30 @@ export default function WishlistPage() {
           </div>
         )}
 
-        {/* 표시 개수 + 정렬 */}
+        {/* 표시 개수 + 컬럼 선택 + 정렬 */}
         {!fetching && favorites.length > 0 && (
           <div className="mb-5 flex items-center justify-between text-sm text-zinc-400">
             <span>{filtered.length}개 상품 표시 중</span>
-            <span>{sortLabel} 정렬</span>
+            <div className="flex items-center gap-2">
+              {/* 모바일 전용 컬럼 선택기 */}
+              <div className="flex sm:hidden items-center gap-0.5 rounded-lg border border-zinc-200 dark:border-zinc-700 p-0.5">
+                {([4, 2, 1] as MobileCols[]).map((n) => (
+                  <button
+                    key={n}
+                    onClick={() => setMobileCols(n)}
+                    className={cn(
+                      'flex size-7 items-center justify-center rounded-md transition-colors',
+                      mobileCols === n
+                        ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900'
+                        : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300',
+                    )}
+                  >
+                    <GridColIcon cols={n} />
+                  </button>
+                ))}
+              </div>
+              <span>{sortLabel} 정렬</span>
+            </div>
           </div>
         )}
 
@@ -392,11 +470,15 @@ export default function WishlistPage() {
             </button>
           </div>
         ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className={cn(
+            'grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4',
+            mobileCols === 4 ? 'grid-cols-4 gap-1.5 sm:gap-4' : mobileCols === 2 ? 'grid-cols-2 gap-3 sm:gap-4' : 'grid-cols-1 gap-4',
+          )}>
             {filtered.map((item) => (
               <FavoriteCard
                 key={item.docId}
                 item={item}
+                cols={mobileCols}
                 onRemove={() => removeFavorite(user.uid, item.docId)}
               />
             ))}

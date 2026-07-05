@@ -1,35 +1,27 @@
-'use client'
+'use client';
 
-import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-  type ChartConfig,
-} from '@/components/ui/chart'
-import type { MonthlySpendPoint } from '@/lib/types'
+import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '@/components/ui/chart';
+import type { MonthlySpendPoint } from '@/lib/types';
 
 const chartConfig = {
   interest: {
     label: '관심 소비',
     color: 'var(--chart-3)',
   },
-} satisfies ChartConfig
+} satisfies ChartConfig;
 
-const formatWon = (value: number) =>
-  value === 0 ? '₩0' : `₩${(value / 10000).toFixed(0)}만`
+const formatWon = (value: number) => (value === 0 ? '0' : `${(value / 10000).toFixed(0)}만`);
 
 export function SpendTrendChart({ data }: { data: MonthlySpendPoint[] }) {
-  const hasData = data.some((d) => d.interest > 0)
+  const hasData = data.some((d) => d.interest > 0);
 
   return (
     <Card className="rounded-xl border-zinc-200/70 shadow-none">
       <CardHeader>
         <CardTitle className="text-sm font-semibold">월별 관심 소비 추이</CardTitle>
-        <CardDescription className="text-xs">
-          관심상품 등록 기준 월별 누적 금액 (최근 6개월)
-        </CardDescription>
+        <CardDescription className="text-xs">관심상품 등록 기준 월별 누적 금액 (최근 6개월)</CardDescription>
       </CardHeader>
       <CardContent>
         {hasData ? (
@@ -43,35 +35,10 @@ export function SpendTrendChart({ data }: { data: MonthlySpendPoint[] }) {
                   </linearGradient>
                 </defs>
                 <CartesianGrid vertical={false} stroke="var(--border)" strokeDasharray="3 3" />
-                <XAxis
-                  dataKey="month"
-                  tickLine={false}
-                  axisLine={false}
-                  tickMargin={8}
-                  className="text-[11px]"
-                />
-                <YAxis
-                  tickLine={false}
-                  axisLine={false}
-                  width={44}
-                  tickFormatter={formatWon}
-                  className="text-[11px]"
-                />
-                <ChartTooltip
-                  cursor={false}
-                  content={
-                    <ChartTooltipContent
-                      formatter={(value) => [`₩${Number(value).toLocaleString('ko-KR')}`, '관심 소비']}
-                    />
-                  }
-                />
-                <Area
-                  dataKey="interest"
-                  type="monotone"
-                  stroke="var(--color-interest)"
-                  fill="url(#fillInterest)"
-                  strokeWidth={2}
-                />
+                <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} className="text-[11px]" />
+                <YAxis tickLine={false} axisLine={false} width={44} tickFormatter={formatWon} className="text-[11px]" />
+                <ChartTooltip cursor={false} content={<ChartTooltipContent formatter={(value) => [`${Number(value).toLocaleString('ko-KR')}`, '관심 소비']} />} />
+                <Area dataKey="interest" type="monotone" stroke="var(--color-interest)" fill="url(#fillInterest)" strokeWidth={2} />
               </AreaChart>
             </ChartContainer>
             <div className="mt-3 flex items-center gap-4">
@@ -91,5 +58,5 @@ export function SpendTrendChart({ data }: { data: MonthlySpendPoint[] }) {
         )}
       </CardContent>
     </Card>
-  )
+  );
 }

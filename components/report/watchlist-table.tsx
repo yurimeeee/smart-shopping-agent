@@ -1,29 +1,25 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { ArrowDownRight, Bookmark } from 'lucide-react'
-import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { cn } from '@/lib/utils'
-import type { FavoriteItem } from '@/lib/firestore'
+import { ArrowDownRight, Bookmark } from 'lucide-react';
+import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
-const won = (v: number) => `₩${v.toLocaleString('ko-KR')}`
+import { Badge } from '@/components/ui/badge';
+import type { FavoriteItem } from '@/lib/firestore';
+import { cn } from '@/lib/utils';
+import { useState } from 'react';
+
+const won = (v: number) => `${v.toLocaleString('ko-KR')}`;
 
 function ProductThumbnail({ product }: { product: FavoriteItem['product'] }) {
-  const [failed, setFailed] = useState(false)
-  const hue = product.name.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0) % 360
-  const hasImage = product.image && !product.image.includes('placeholder') && !failed
+  const [failed, setFailed] = useState(false);
+  const hue = product.name.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0) % 360;
+  const hasImage = product.image && !product.image.includes('placeholder') && !failed;
 
   if (hasImage) {
     return (
       // eslint-disable-next-line @next/next/no-img-element
-      <img
-        src={product.image}
-        alt={product.name}
-        className="size-full object-contain p-1.5"
-        onError={() => setFailed(true)}
-      />
-    )
+      <img src={product.image} alt={product.name} className="size-full object-contain p-1.5" onError={() => setFailed(true)} />
+    );
   }
 
   return (
@@ -36,7 +32,7 @@ function ProductThumbnail({ product }: { product: FavoriteItem['product'] }) {
     >
       {product.brand[0]}
     </div>
-  )
+  );
 }
 
 export function WatchlistTable({ favorites }: { favorites: FavoriteItem[] }) {
@@ -53,7 +49,7 @@ export function WatchlistTable({ favorites }: { favorites: FavoriteItem[] }) {
           <p className="mt-1 text-xs text-muted-foreground">AI 추천 상품에서 북마크하면 여기에 표시됩니다</p>
         </div>
       </Card>
-    )
+    );
   }
 
   return (
@@ -72,17 +68,12 @@ export function WatchlistTable({ favorites }: { favorites: FavoriteItem[] }) {
 
       <ul className="divide-y divide-zinc-100">
         {favorites.map((f) => {
-          const { product } = f
-          const hasDiscount = product.originalPrice && product.originalPrice > product.price
-          const discountPct = hasDiscount
-            ? Math.round(((product.originalPrice! - product.price) / product.originalPrice!) * 100)
-            : 0
+          const { product } = f;
+          const hasDiscount = product.originalPrice && product.originalPrice > product.price;
+          const discountPct = hasDiscount ? Math.round(((product.originalPrice! - product.price) / product.originalPrice!) * 100) : 0;
 
           return (
-            <li
-              key={f.docId}
-              className="grid grid-cols-2 items-center gap-2 px-4 py-3 md:grid-cols-[1fr_repeat(3,7rem)]"
-            >
+            <li key={f.docId} className="grid grid-cols-2 items-center gap-2 px-4 py-3 md:grid-cols-[1fr_repeat(3,7rem)]">
               <div className="col-span-2 flex items-center gap-3 md:col-span-1">
                 <div className="flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-zinc-50">
                   <ProductThumbnail product={product} />
@@ -119,9 +110,9 @@ export function WatchlistTable({ favorites }: { favorites: FavoriteItem[] }) {
                 </Badge>
               </div>
             </li>
-          )
+          );
         })}
       </ul>
     </Card>
-  )
+  );
 }

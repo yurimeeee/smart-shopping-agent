@@ -32,7 +32,7 @@ export function WorkspacePanel() {
           <p className="text-xs font-medium text-muted-foreground">실시간 추천·비교</p>
           <h2 className="text-sm font-semibold text-foreground">{title}</h2>
         </div>
-        {isAnalyzing ? (
+        {/* {isAnalyzing ? (
           <span className="flex items-center gap-1.5 rounded-full border border-zinc-200 dark:border-zinc-700 bg-background px-3 py-1 text-xs text-muted-foreground">
             <Loader2 className="size-3 animate-spin" />
             분석 중...
@@ -41,7 +41,7 @@ export function WorkspacePanel() {
           <span className="rounded-full border border-zinc-200 dark:border-zinc-700 bg-background px-3 py-1 text-xs text-muted-foreground">
             {`상품 ${productCount}개 분석 완료`}
           </span>
-        ) : null}
+        ) : null} */}
       </header>
 
       <div className="min-h-0 flex-1 overflow-y-auto px-6 py-6">
@@ -63,15 +63,15 @@ export function WorkspacePanel() {
           <Tabs defaultValue="curation" className="gap-5">
             <TabsList className="w-full justify-start">
               <TabsTrigger value="curation" className="flex-none px-3">
-                <LayoutGrid className="size-4" />
+                <LayoutGrid className="hidden sm:block size-4" />
                 큐레이션 추천
               </TabsTrigger>
               <TabsTrigger value="compare" className="flex-none px-3">
-                <Table2 className="size-4" />
+                <Table2 className="hidden sm:block size-4" />
                 비교 · 구매 판단
               </TabsTrigger>
               <TabsTrigger value="reviews" className="flex-none px-3">
-                <MessageSquareText className="size-4" />
+                <MessageSquareText className="hidden sm:block size-4" />
                 리뷰 요약
               </TabsTrigger>
             </TabsList>

@@ -152,6 +152,12 @@ export function ChatPanel({ userId, chatId, onChatCreate }: ChatPanelProps) {
   const createdChatIdRef = useRef<string | null>(null);
   const { setWorkspace, setAnalyzing, setIsNewChat, tasteProfile } = useStore();
 
+  const scrollToBottom = () => {
+    const viewport = scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]');
+    if (!viewport) return;
+    requestAnimationFrame(() => { viewport.scrollTop = viewport.scrollHeight; });
+  };
+
   // Load messages + workspace when chatId changes (external switch)
   useEffect(() => {
     if (chatId === null) {
@@ -162,18 +168,17 @@ export function ChatPanel({ userId, chatId, onChatCreate }: ChatPanelProps) {
     if (chatId === createdChatIdRef.current) return;
 
     setIsNewChat(false);
+    setMessages([]);
     Promise.all([getMessages(userId, chatId), getAnalysis(userId, chatId)]).then(([savedMsgs, analysis]) => {
       setMessages(savedMsgs.map((m) => ({ id: m.id, role: m.role, content: m.content, timestamp: '' })));
       setWorkspace(analysis);
+      requestAnimationFrame(scrollToBottom);
     });
   }, [chatId, userId]);
 
-  // Auto-scroll to bottom
+  // Auto-scroll to bottom on new messages
   useEffect(() => {
-    if (scrollAreaRef.current) {
-      const viewport = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
-      if (viewport) viewport.scrollTop = viewport.scrollHeight;
-    }
+    scrollToBottom();
   }, [messages]);
 
   const sendMessage = async () => {
@@ -324,7 +329,7 @@ export function ChatPanel({ userId, chatId, onChatCreate }: ChatPanelProps) {
             onChange={(e) => setValue(e.target.value)}
             onKeyDown={handleKeyDown}
             disabled={isLoading}
-            placeholder="쿠팡·네이버 링크나, 찾으시는 상품에 대해 입력해 주세요."
+            placeholder="찾으시는 상품에 대해 말씀해 주세요."
             className="w-full resize-none bg-transparent px-2 py-1.5 text-sm leading-relaxed text-foreground outline-none placeholder:text-zinc-400 disabled:opacity-50"
           />
           <div className="mt-1 flex items-center justify-between px-1">

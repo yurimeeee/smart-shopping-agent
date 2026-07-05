@@ -46,13 +46,13 @@ export function SiteHeader({ active, rightSlot }: SiteHeaderProps) {
       </Link>
 
       {/* 네비게이션 */}
-      <nav className="flex items-center gap-1">
+      <nav className="flex items-center gap-0.5 sm:gap-1">
         {navItems.map((item) => (
           <Link
             key={item.key}
             href={item.href}
             className={cn(
-              'rounded-full px-3 py-1.5 text-xs font-medium transition-colors',
+              'rounded-full px-2 sm:px-3 py-1 sm:py-1.5 text-[10px] sm:text-xs font-medium transition-colors whitespace-nowrap',
               active === item.key ? 'bg-zinc-100 dark:bg-zinc-800 text-foreground' : 'text-muted-foreground hover:text-foreground',
             )}
           >
@@ -109,7 +109,7 @@ export function SiteHeader({ active, rightSlot }: SiteHeaderProps) {
             </>
           )}
         </div>
-        {rightSlot && <div className="ml-2 border-l border-zinc-200 dark:border-zinc-700 pl-2">{rightSlot}</div>}
+        {rightSlot && <div className="ml-2 hidden sm:block border-l border-zinc-200 dark:border-zinc-700 pl-2">{rightSlot}</div>}
       </nav>
     </header>
   );

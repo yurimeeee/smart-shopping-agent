@@ -196,7 +196,7 @@ export const utilityFeatures: UtilityFeature[] = [
     id: 'u2',
     title: '대화 로그 기반 소비 패턴 분석',
     description: '대화 기록에서 관심 카테고리와 예산 흐름을 시각화합니다.',
-    metric: '₩1.2M',
+    metric: '1.2M',
     metricLabel: '이번 달 관심 소비',
     icon: 'chart',
   },
@@ -216,7 +216,7 @@ export const reportKpis: ReportKpi[] = [
   {
     id: 'k1',
     label: '이번 달 관심 소비',
-    value: '₩1,248,000',
+    value: '1,248,000',
     delta: '+12%',
     trend: 'up',
     positive: false,
@@ -234,8 +234,8 @@ export const reportKpis: ReportKpi[] = [
   {
     id: 'k3',
     label: '가격 추적 절약액',
-    value: '₩186,400',
-    delta: '+₩42,000',
+    value: '186,400',
+    delta: '+42,000',
     trend: 'up',
     positive: true,
     hint: '최저가 알림으로 절약',
