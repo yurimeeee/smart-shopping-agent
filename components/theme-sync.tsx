@@ -1,0 +1,14 @@
+'use client';
+
+import { useEffect } from 'react';
+import { useStore } from '@/lib/store';
+
+export function ThemeSync() {
+  const theme = useStore((s) => s.theme);
+  useEffect(() => {
+    const root = document.documentElement;
+    root.classList.remove('light', 'dark');
+    root.classList.add(theme);
+  }, [theme]);
+  return null;
+}
