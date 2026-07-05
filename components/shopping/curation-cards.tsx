@@ -208,7 +208,7 @@ export function CurationCards({ products }: { products: ProductItem[] }) {
   const list = products;
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+    <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(min(220px, 100%), 1fr))' }}>
       {list.map((product) => {
         const hash = makeFavoriteDocId(product);
         const docId = favoriteMap[hash] ?? null;

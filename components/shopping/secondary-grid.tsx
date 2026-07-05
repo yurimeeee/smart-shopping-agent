@@ -27,7 +27,7 @@ export function SecondaryGrid() {
         </div>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(min(180px, 100%), 1fr))' }}>
         {utilityFeatures.map((feature) => {
           const Icon = iconMap[feature.icon];
           const href = featureHref[feature.id];

@@ -1,8 +1,9 @@
-import type { FavoriteItem } from './firestore';
-import type { ProductItem } from './types';
 import type { CategorySpend, MonthlySpendPoint, ReportInsight, ReportKpi } from './types';
 
-const KOREAN_MONTHS = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+import type { FavoriteItem } from './firestore';
+import type { ProductItem } from './types';
+
+const KOREAN_MONTHS = ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'];
 
 function detectCategory(product: ProductItem): string {
   const text = [product.name, product.brand, ...product.tags].join(' ').toLowerCase();
@@ -114,7 +115,7 @@ export function computeInsights(
     insights.push({
       id: 'i-empty',
       title: '관심상품을 등록해 보세요',
-      detail: 'AI 쇼핑 조수에게 상품을 추천받아 위시리스트에 저장하면 소비 패턴 분석이 시작됩니다.',
+      detail: 'AI 쇼핑 큐레이터에게 상품을 추천받아 위시리스트에 저장하면 소비 패턴 분석이 시작됩니다.',
       tone: 'neutral',
     });
     return insights;
@@ -133,7 +134,7 @@ export function computeInsights(
     const pct = Math.round(
       ((bestDiscount.product.originalPrice! - bestDiscount.product.price) /
         bestDiscount.product.originalPrice!) *
-        100,
+      100,
     );
     insights.push({
       id: 'i-discount',

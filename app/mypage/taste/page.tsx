@@ -1,13 +1,14 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { ArrowLeft, Check, ShoppingBag } from 'lucide-react';
-import { useAuth } from '@/lib/auth-context';
-import { useStore } from '@/lib/store';
-import { cn } from '@/lib/utils';
+import { Check } from 'lucide-react';
+import { useEffect, useState } from 'react';
+
 import type { TasteProfile } from '@/lib/types';
+import { cn } from '@/lib/utils';
+import { useAuth } from '@/lib/auth-context';
+import { useRouter } from 'next/navigation';
+import { useStore } from '@/lib/store';
+import { SiteHeader } from '@/components/shopping/site-header';
 
 /* ── 태그 데이터 ──────────────────────────────────────── */
 
@@ -81,11 +82,7 @@ const PLATFORMS = [
 /* ── 하위 컴포넌트 ──────────────────────────────────────── */
 
 function SectionCard({ children, className }: { children: React.ReactNode; className?: string }) {
-  return (
-    <div className={cn('rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-background p-5', className)}>
-      {children}
-    </div>
-  );
+  return <div className={cn('rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-background p-5', className)}>{children}</div>;
 }
 
 function SectionTitle({ label, hint }: { label: string; hint?: string }) {
@@ -97,15 +94,7 @@ function SectionTitle({ label, hint }: { label: string; hint?: string }) {
   );
 }
 
-function TagToggle({
-  label,
-  active,
-  onToggle,
-}: {
-  label: string;
-  active: boolean;
-  onToggle: () => void;
-}) {
+function TagToggle({ label, active, onToggle }: { label: string; active: boolean; onToggle: () => void }) {
   return (
     <button
       type="button"
@@ -158,9 +147,7 @@ export default function TasteProfilePage() {
   const togglePlatform = (id: string) => {
     setDraft((d) => ({
       ...d,
-      platforms: d.platforms.includes(id)
-        ? d.platforms.filter((p) => p !== id)
-        : [...d.platforms, id],
+      platforms: d.platforms.includes(id) ? d.platforms.filter((p) => p !== id) : [...d.platforms, id],
     }));
   };
 
@@ -174,47 +161,32 @@ export default function TasteProfilePage() {
 
   return (
     <div className="min-h-dvh bg-background">
-      {/* 상단 헤더 */}
-      <header className="sticky top-0 z-10 flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 bg-background/95 px-4 py-3 backdrop-blur">
-        <div className="flex items-center gap-3">
-          <Link
-            href="/"
-            className="flex size-7 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-foreground"
-            title="돌아가기"
+      <SiteHeader
+        rightSlot={
+          <button
+            type="button"
+            onClick={handleSave}
+            disabled={!isDirty && !saved}
+            className={cn(
+              'flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-semibold transition-all',
+              saved
+                ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500'
+                : isDirty
+                  ? 'bg-foreground text-background hover:opacity-80'
+                  : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400 cursor-default',
+            )}
           >
-            <ArrowLeft className="size-4" />
-          </Link>
-          <div className="flex items-center gap-2">
-            <span className="flex size-6 items-center justify-center rounded-md bg-foreground text-background">
-              <ShoppingBag className="size-3.5" />
-            </span>
-            <span className="text-sm font-semibold text-foreground">PickS</span>
-          </div>
-        </div>
-        <button
-          type="button"
-          onClick={handleSave}
-          disabled={!isDirty && !saved}
-          className={cn(
-            'flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-semibold transition-all',
-            saved
-              ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500'
-              : isDirty
-                ? 'bg-foreground text-background hover:opacity-80'
-                : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400 cursor-default',
-          )}
-        >
-          {saved && <Check className="size-3" />}
-          {saved ? '저장됨' : '저장하기'}
-        </button>
-      </header>
+            {saved && <Check className="size-3" />}
+            {saved ? '저장됨' : '저장하기'}
+          </button>
+        }
+      />
 
       {/* 페이지 타이틀 */}
       <div className="mx-auto max-w-2xl px-4 pt-8 pb-4">
         <h1 className="text-base font-bold text-foreground">나의 쇼핑 취향 프로필</h1>
         <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-          당신의 라이프스타일과 쇼핑 성향을 등록해 두세요. AI 쇼핑 조수가 이 데이터를 바탕으로
-          가장 알맞은 제품을 분석하고 픽(Pick)해드립니다.
+          당신의 라이프스타일과 쇼핑 성향을 등록해 두세요. AI 쇼핑 큐레이터가 이 데이터를 바탕으로 가장 알맞은 제품을 분석하고 픽(Pick)해드립니다.
         </p>
       </div>
 
@@ -225,12 +197,7 @@ export default function TasteProfilePage() {
             <SectionTitle label={group.label} hint={group.hint} />
             <div className="flex flex-wrap gap-2">
               {group.tags.map((tag) => (
-                <TagToggle
-                  key={tag.id}
-                  label={tag.label}
-                  active={draft.tags.includes(tag.id)}
-                  onToggle={() => toggleTag(tag.id)}
-                />
+                <TagToggle key={tag.id} label={tag.label} active={draft.tags.includes(tag.id)} onToggle={() => toggleTag(tag.id)} />
               ))}
             </div>
           </SectionCard>
@@ -238,10 +205,7 @@ export default function TasteProfilePage() {
 
         {/* 2. AI 프롬프트 자유 입력 */}
         <SectionCard>
-          <SectionTitle
-            label="나만의 쇼핑 기준 직접 입력"
-            hint="AI 조수가 추천 시 최우선으로 고려하는 개인 메모입니다"
-          />
+          <SectionTitle label="나만의 쇼핑 기준 직접 입력" hint="AI 조수가 추천 시 최우선으로 고려하는 개인 메모입니다" />
           <textarea
             value={draft.customNote}
             onChange={(e) => setDraft((d) => ({ ...d, customNote: e.target.value }))}
@@ -253,43 +217,24 @@ export default function TasteProfilePage() {
 
         {/* 3. 선호 쇼핑 플랫폼 */}
         <SectionCard>
-          <SectionTitle
-            label="주로 이용하는 쇼핑 플랫폼"
-            hint="선택한 플랫폼 위주로 링크와 가격을 탐색합니다"
-          />
+          <SectionTitle label="주로 이용하는 쇼핑 플랫폼" hint="선택한 플랫폼 위주로 링크와 가격을 탐색합니다" />
           <div className="flex flex-wrap gap-2">
             {PLATFORMS.map((p) => (
-              <TagToggle
-                key={p.id}
-                label={p.label}
-                active={draft.platforms.includes(p.id)}
-                onToggle={() => togglePlatform(p.id)}
-              />
+              <TagToggle key={p.id} label={p.label} active={draft.platforms.includes(p.id)} onToggle={() => togglePlatform(p.id)} />
             ))}
           </div>
         </SectionCard>
 
         {/* 4. 가성비 vs 프리미엄 슬라이더 */}
         <SectionCard>
-          <SectionTitle
-            label="소비 우선순위"
-            hint="AI가 상품 추천 지수 계산 시 가격·품질 가중치에 반영됩니다"
-          />
+          <SectionTitle label="소비 우선순위" hint="AI가 상품 추천 지수 계산 시 가격·품질 가중치에 반영됩니다" />
           <div className="space-y-4">
             <div className="flex items-center justify-between text-xs font-medium">
-              <span className={cn('transition-colors', draft.priceBalance <= 40 ? 'text-foreground' : 'text-zinc-400')}>
-                가성비 우선
-              </span>
+              <span className={cn('transition-colors', draft.priceBalance <= 40 ? 'text-foreground' : 'text-zinc-400')}>가성비 우선</span>
               <span className="text-[11px] text-muted-foreground">
-                {draft.priceBalance === 50
-                  ? '균형'
-                  : draft.priceBalance < 50
-                    ? `가성비 ${100 - draft.priceBalance * 2}%`
-                    : `프리미엄 ${(draft.priceBalance - 50) * 2}%`}
+                {draft.priceBalance === 50 ? '균형' : draft.priceBalance < 50 ? `가성비 ${100 - draft.priceBalance * 2}%` : `프리미엄 ${(draft.priceBalance - 50) * 2}%`}
               </span>
-              <span className={cn('transition-colors', draft.priceBalance >= 60 ? 'text-foreground' : 'text-zinc-400')}>
-                프리미엄 우선
-              </span>
+              <span className={cn('transition-colors', draft.priceBalance >= 60 ? 'text-foreground' : 'text-zinc-400')}>프리미엄 우선</span>
             </div>
             <div className="relative">
               <input
@@ -297,9 +242,7 @@ export default function TasteProfilePage() {
                 min={0}
                 max={100}
                 value={draft.priceBalance}
-                onChange={(e) =>
-                  setDraft((d) => ({ ...d, priceBalance: Number(e.target.value) }))
-                }
+                onChange={(e) => setDraft((d) => ({ ...d, priceBalance: Number(e.target.value) }))}
                 className="slider-thumb w-full cursor-pointer appearance-none rounded-full bg-zinc-200 dark:bg-zinc-700"
                 style={{
                   height: '4px',
@@ -315,9 +258,7 @@ export default function TasteProfilePage() {
                   onClick={() => setDraft((d) => ({ ...d, priceBalance: v }))}
                   className={cn(
                     'rounded-full px-2.5 py-1 text-[11px] transition-colors',
-                    draft.priceBalance === v
-                      ? 'bg-zinc-900 dark:bg-zinc-100 text-zinc-100 dark:text-zinc-900 font-semibold'
-                      : 'text-zinc-400 hover:text-foreground',
+                    draft.priceBalance === v ? 'bg-zinc-900 dark:bg-zinc-100 text-zinc-100 dark:text-zinc-900 font-semibold' : 'text-zinc-400 hover:text-foreground',
                   )}
                 >
                   {v === 0 ? '극가성비' : v === 25 ? '가성비' : v === 50 ? '균형' : v === 75 ? '프리미엄' : '최고급'}

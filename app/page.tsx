@@ -1,7 +1,7 @@
 'use client';
 
 import { MessageSquare, Moon, PanelLeftOpen, ShoppingBag, Sparkles, Sun, LogOut, UserCircle2 } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { ChatPanel } from '@/components/shopping/chat-panel';
 import { ConversationList } from '@/components/shopping/conversation-list';
@@ -22,6 +22,45 @@ export default function Page() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
+
+  // 패널 드래그 리사이즈
+  const mainRef = useRef<HTMLDivElement>(null);
+  const [chatWidthPx, setChatWidthPx] = useState(420);
+  const [isDragging, setIsDragging] = useState(false);
+  const chatWidthRef = useRef(chatWidthPx);
+  useEffect(() => { chatWidthRef.current = chatWidthPx; }, [chatWidthPx]);
+
+  useEffect(() => {
+    if (!mainRef.current) return;
+    const sidebarW = sidebarOpen ? 220 : 48;
+    const available = mainRef.current.clientWidth - sidebarW;
+    if (available > 600) setChatWidthPx(Math.round(available * 0.4));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleDragStart = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    const startX = e.clientX;
+    const startWidth = chatWidthRef.current;
+    setIsDragging(true);
+
+    const onMove = (ev: MouseEvent) => {
+      if (!mainRef.current) return;
+      const sidebarW = sidebarOpen ? 220 : 48;
+      const available = mainRef.current.clientWidth - sidebarW;
+      const next = startWidth + (ev.clientX - startX);
+      setChatWidthPx(Math.min(Math.max(next, 280), available - 280));
+    };
+
+    const onUp = () => {
+      setIsDragging(false);
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+    };
+
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  }, [sidebarOpen]);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -62,7 +101,7 @@ export default function Page() {
   return (
     <div className="flex h-dvh flex-col bg-background">
       {/* Global top bar */}
-      <header className="flex shrink-0 items-center justify-between border-b border-zinc-100 dark:border-zinc-800 px-4 py-3">
+      <header className="sticky top-0 z-10 flex shrink-0 items-center justify-between border-b border-zinc-100 dark:border-zinc-800 bg-background/95 backdrop-blur px-4 py-3">
         <div className="flex items-center gap-2">
           {/* Mobile sidebar toggle */}
           <button
@@ -76,23 +115,25 @@ export default function Page() {
             <ShoppingBag className="size-4" />
           </span>
           <span className="text-sm font-semibold tracking-tight text-foreground">PickS</span>
-          <span className="ml-2 hidden text-xs text-muted-foreground sm:inline">탐색부터 비교까지, 당신의 쇼핑 가이드</span>
         </div>
-        <nav className="flex items-center gap-3 text-xs text-muted-foreground">
-          <a href="/wishlist" className="hidden transition-colors hover:text-foreground sm:inline">
-            내 관심상품
+        <nav className="flex items-center gap-1">
+          <a href="/" className="rounded-full bg-zinc-100 dark:bg-zinc-800 px-3 py-1.5 text-xs font-medium text-foreground">
+            쇼핑 큐레이터
           </a>
-          <a href="/report" className="hidden transition-colors hover:text-foreground sm:inline">
+          <a href="/wishlist" className="rounded-full px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground">
+            관심상품
+          </a>
+          <a href="/report" className="rounded-full px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground">
             소비 리포트
           </a>
           <button
             onClick={toggleTheme}
-            className="flex size-7 items-center justify-center rounded-lg transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-foreground text-muted-foreground"
+            className="ml-1 flex size-7 items-center justify-center rounded-full transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-foreground text-muted-foreground"
             title={theme === 'light' ? '다크 모드로 전환' : '라이트 모드로 전환'}
           >
             {theme === 'light' ? <Moon className="size-4" /> : <Sun className="size-4" />}
           </button>
-          <div ref={profileRef} className="relative">
+          <div ref={profileRef} className="relative ml-1">
             <button
               onClick={() => setProfileOpen((v) => !v)}
               className="flex items-center rounded-full transition-opacity hover:opacity-70"
@@ -133,14 +174,19 @@ export default function Page() {
         </nav>
       </header>
 
-      {/* Desktop: 3-column grid */}
+      {/* Desktop: flex with resizable panels */}
       <main
-        className="hidden min-h-0 flex-1 transition-[grid-template-columns] duration-200 lg:grid"
-        style={{
-          gridTemplateColumns: sidebarOpen ? '220px minmax(320px,2fr) 3fr' : '48px minmax(320px,2fr) 3fr',
-        }}
+        ref={mainRef}
+        className={cn(
+          'hidden min-h-0 flex-1 lg:flex',
+          isDragging && 'cursor-ew-resize select-none',
+        )}
       >
-        <div className="min-h-0 overflow-hidden">
+        {/* 사이드바 */}
+        <div
+          className="min-h-0 shrink-0 overflow-hidden border-r border-zinc-100 dark:border-zinc-800 transition-[width] duration-200"
+          style={{ width: sidebarOpen ? 220 : 48 }}
+        >
           <ConversationList
             userId={user.uid}
             currentChatId={currentChatId}
@@ -154,10 +200,46 @@ export default function Page() {
             onDelete={handleNewChat}
           />
         </div>
-        <div className="min-h-0 border-r border-zinc-100 dark:border-zinc-800">
+
+        {/* 채팅 패널 */}
+        <div
+          className="min-h-0 shrink-0 overflow-hidden"
+          style={{ width: chatWidthPx }}
+        >
           <ChatPanel userId={user.uid} chatId={currentChatId} onChatCreate={setCurrentChatId} />
         </div>
-        <div className="min-h-0">
+
+        {/* 드래그 핸들 */}
+        <div
+          onMouseDown={handleDragStart}
+          className="group relative z-10 w-1 shrink-0 cursor-ew-resize"
+        >
+          <div
+            className={cn(
+              'absolute inset-y-0 -left-1 -right-1 transition-colors',
+              isDragging
+                ? 'bg-blue-500/20'
+                : 'hover:bg-blue-500/10',
+            )}
+          />
+          <div
+            className={cn(
+              'absolute inset-y-0 left-0 w-px transition-colors',
+              isDragging
+                ? 'bg-blue-500'
+                : 'bg-zinc-200 dark:bg-zinc-700 group-hover:bg-blue-400',
+            )}
+          />
+          {/* 그립 도트 */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+            {[0, 1, 2].map((i) => (
+              <div key={i} className="size-1 rounded-full bg-zinc-400 dark:bg-zinc-500" />
+            ))}
+          </div>
+        </div>
+
+        {/* 워크스페이스 패널 */}
+        <div className="min-h-0 flex-1 overflow-hidden">
           <WorkspacePanel />
         </div>
       </main>

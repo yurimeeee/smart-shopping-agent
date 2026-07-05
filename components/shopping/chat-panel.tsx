@@ -282,7 +282,7 @@ export function ChatPanel({ userId, chatId, onChatCreate }: ChatPanelProps) {
             <Sparkles className="size-4.5" />
           </span>
           <div>
-            <h1 className="text-sm font-semibold leading-tight text-foreground">AI 쇼핑 조수</h1>
+            <h1 className="text-sm font-semibold leading-tight text-foreground">AI 쇼핑 큐레이터</h1>
             <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <span className="relative flex size-1.5">
                 <span className="absolute inline-flex size-full animate-ping rounded-full bg-emerald-500 opacity-60" />

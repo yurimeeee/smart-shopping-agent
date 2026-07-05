@@ -19,7 +19,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'PickS — AI 쇼핑 조수',
+  title: 'PickS — AI 쇼핑 큐레이터',
   description: '상품 링크만 붙여넣으면 AI가 비교·추천·리뷰 분석까지. 탐색부터 비교까지, 당신의 쇼핑 가이드.',
   generator: 'v0.app',
   icons: {
