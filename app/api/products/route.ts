@@ -105,7 +105,35 @@ export async function POST(req: Request) {
     const text = response.text;
     if (!text) return Response.json({ error: 'Empty response' }, { status: 502 });
 
-    return Response.json(JSON.parse(text));
+    const data = JSON.parse(text);
+
+    // Fetch product images from Naver Shopping API in parallel
+    const naverId = process.env.NAVER_CLIENT_ID;
+    const naverSecret = process.env.NAVER_CLIENT_SECRET;
+
+    if (naverId && naverSecret && Array.isArray(data.products)) {
+      const imageResults = await Promise.allSettled(
+        data.products.map(async (p: { brand: string; name: string }) => {
+          const q = encodeURIComponent(`${p.brand} ${p.name}`);
+          const res = await fetch(`https://openapi.naver.com/v1/search/shop.json?query=${q}&display=1`, {
+            headers: {
+              'X-Naver-Client-Id': naverId,
+              'X-Naver-Client-Secret': naverSecret,
+            },
+          });
+          if (!res.ok) return null;
+          const json = await res.json() as { items?: { image?: string }[] };
+          return json.items?.[0]?.image ?? null;
+        }),
+      );
+
+      data.products = data.products.map((p: object, i: number) => ({
+        ...p,
+        imageUrl: imageResults[i].status === 'fulfilled' ? imageResults[i].value : null,
+      }));
+    }
+
+    return Response.json(data);
   } catch (err) {
     console.error('[products/route]', err);
     return Response.json({ error: String(err) }, { status: 500 });

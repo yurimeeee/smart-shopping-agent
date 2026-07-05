@@ -40,7 +40,7 @@ function isProductQuery(text: string): boolean {
 function toWorkspaceData(raw: any): WorkspaceData {
   const products: ProductItem[] = raw.products.map((p: any) => ({
     ...p,
-    image: '/placeholder.jpg',
+    image: p.imageUrl || '/placeholder.jpg',
     originalPrice: p.originalPrice > 0 ? p.originalPrice : undefined,
   }));
 
