@@ -12,6 +12,8 @@ const iconMap: Record<UtilityFeature['icon'], LucideIcon> = {
 };
 
 const featureHref: Record<string, string> = {
+  u1: '/wishlist',
+  u2: '/report',
   u3: '/mypage/taste',
 };
 

@@ -32,6 +32,8 @@ export interface ProductItem {
   /** 0 - 100 AI recommendation index */
   aiScore: number
   recommended?: boolean
+  link?: string
+  mallName?: string
 }
 
 export interface ComparisonSpec {

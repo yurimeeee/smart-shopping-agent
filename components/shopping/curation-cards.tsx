@@ -49,6 +49,7 @@ function ProductThumbnail({ product }: { product: ProductItem }) {
         src={product.image}
         alt={`${product.brand} ${product.name}`}
         className="absolute inset-0 size-full object-contain p-4"
+        referrerPolicy="no-referrer"
         onError={() => setFailed(true)}
       />
     );
@@ -163,7 +164,7 @@ function ProductCard({
             </p>
           </div>
           <a
-            href={`https://search.shopping.naver.com/search/all?query=${encodeURIComponent(`${product.brand} ${product.name}`)}`}
+            href={product.link ?? `https://search.shopping.naver.com/search/all?query=${encodeURIComponent(`${product.brand} ${product.name}`)}`}
             target="_blank"
             rel="noopener noreferrer"
           >

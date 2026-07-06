@@ -9,6 +9,7 @@ import { useAuth } from '@/lib/auth-context';
 import { useRouter } from 'next/navigation';
 import { useStore } from '@/lib/store';
 import { SiteHeader } from '@/components/shopping/site-header';
+import { getTasteProfile, saveTasteProfile } from '@/lib/firestore';
 
 /* ── 태그 데이터 ──────────────────────────────────────── */
 
@@ -125,6 +126,17 @@ export default function TasteProfilePage() {
     if (!loading && !user) router.replace('/login');
   }, [user, loading, router]);
 
+  // 유저가 확정되면 Firestore에서 해당 유저의 taste profile 로드
+  useEffect(() => {
+    if (!user) return;
+    getTasteProfile(user.uid).then((profile) => {
+      if (profile) {
+        setTasteProfile(profile);
+        setDraft(profile);
+      }
+    });
+  }, [user?.uid]);
+
   useEffect(() => {
     setDraft(tasteProfile);
   }, [tasteProfile]);
@@ -151,8 +163,9 @@ export default function TasteProfilePage() {
     }));
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     setTasteProfile(draft);
+    if (user) await saveTasteProfile(user.uid, draft);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   };

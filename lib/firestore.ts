@@ -5,6 +5,7 @@ import {
   doc,
   deleteDoc,
   getDoc,
+  setDoc,
   serverTimestamp,
   getDocs,
   query,
@@ -13,7 +14,7 @@ import {
   Timestamp,
 } from 'firebase/firestore';
 import { db } from './firebase';
-import type { ProductItem } from './types';
+import type { ProductItem, TasteProfile } from './types';
 import type { WorkspaceData } from './store';
 
 // undefined 값 제거 (Firestore는 undefined 불허)
@@ -150,6 +151,17 @@ export async function getFavoriteDocIds(userId: string): Promise<Record<string, 
 }
 
 export { makeFavoriteDocId };
+
+/* ── 취향 프로필 ── */
+
+export async function saveTasteProfile(userId: string, profile: TasteProfile): Promise<void> {
+  await setDoc(doc(db, 'users', userId, 'profile', 'taste'), clean(profile));
+}
+
+export async function getTasteProfile(userId: string): Promise<TasteProfile | null> {
+  const snap = await getDoc(doc(db, 'users', userId, 'profile', 'taste'));
+  return snap.exists() ? (snap.data() as TasteProfile) : null;
+}
 
 export function subscribeConversations(
   userId: string,

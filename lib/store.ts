@@ -31,6 +31,8 @@ interface AppStore {
 
   tasteProfile: TasteProfile;
   setTasteProfile: (profile: TasteProfile) => void;
+
+  resetUserData: () => void;
 }
 
 export const useStore = create<AppStore>()(
@@ -50,14 +52,21 @@ export const useStore = create<AppStore>()(
 
       tasteProfile: DEFAULT_TASTE,
       setTasteProfile: (profile) => set({ tasteProfile: profile }),
+
+      resetUserData: () =>
+        set({
+          currentChatId: null,
+          workspace: null,
+          isAnalyzing: false,
+          isNewChat: false,
+          tasteProfile: DEFAULT_TASTE,
+        }),
     }),
     {
       name: 'picks-store',
       partialize: (state) => ({
-        currentChatId: state.currentChatId,
-        isNewChat: state.isNewChat,
+        // theme만 persist — 유저별 데이터는 Firestore에서 로드
         theme: state.theme,
-        tasteProfile: state.tasteProfile,
       }),
     },
   ),

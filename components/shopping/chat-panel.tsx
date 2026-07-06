@@ -40,20 +40,14 @@ function isProductQuery(text: string): boolean {
 function toWorkspaceData(raw: any): WorkspaceData {
   const products: ProductItem[] = raw.products.map((p: any) => ({
     ...p,
-    image: p.imageUrl || '/placeholder.jpg',
+    image: p.image || '/placeholder.jpg',
     originalPrice: p.originalPrice > 0 ? p.originalPrice : undefined,
   }));
 
-  const productIds = products.map((p) => p.id);
-
-  const comparisonMatrix: ProductComparisonMatrix = {
-    productIds,
-    specs: (raw.comparisonSpecs ?? []).map((s: any) => ({
-      key: s.key,
-      label: s.label,
-      values: Object.fromEntries(productIds.map((id, i) => [id, s.values[i] ?? ''])),
-      best: s.bestIndex >= 0 ? productIds[s.bestIndex] : undefined,
-    })),
+  // API already returns comparisonMatrix in the new flow; fallback for old format
+  const comparisonMatrix: ProductComparisonMatrix = raw.comparisonMatrix ?? {
+    productIds: products.map((p) => p.id),
+    specs: [],
   };
 
   const reviewSummary: ReviewSummary = {
