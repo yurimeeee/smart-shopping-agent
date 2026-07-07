@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ExternalLink, Heart, Loader2, Search, SlidersHorizontal } from 'lucide-react';
 import { SiteHeader } from '@/components/shopping/site-header';
@@ -142,7 +142,7 @@ function SkeletonCard() {
   );
 }
 
-export default function SearchPage() {
+function SearchContent() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -307,5 +307,17 @@ export default function SearchPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex h-dvh items-center justify-center bg-background">
+        <div className="size-5 animate-spin rounded-full border-2 border-foreground border-t-transparent" />
+      </div>
+    }>
+      <SearchContent />
+    </Suspense>
   );
 }
