@@ -236,42 +236,8 @@ export function ChatPanel({ userId, chatId, onChatCreate }: ChatPanelProps) {
     // 2. 유저 메시지 저장
     await addMessage(userId, activeChatId, 'user', userContent);
 
-    // 3. 상품 분석 (fire-and-forget, 텍스트 스트림과 병렬)
-    if (isProductQuery(userContent)) {
-      const cid = activeChatId;
-      setAnalyzing(true);
-      (async () => {
-        try {
-          const r = await fetch('/api/products', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ query: userContent, tasteProfile }),
-          });
-          const raw = await r.json().catch(() => ({}));
-
-          if (!r.ok || raw.error || !raw.products?.length) {
-            // 서버 실패 → 클라이언트 폴백: /api/search로 직접 네이버 검색
-            const sr = await fetch(`/api/search?q=${encodeURIComponent(userContent)}&display=10&sort=sim`);
-            const sd = await sr.json().catch(() => ({ items: [] }));
-            if (sd.items?.length > 0) {
-              const ws = naverItemsToWorkspace(userContent, sd.items);
-              setWorkspace(ws);
-              await saveAnalysis(userId, cid, ws);
-            }
-            return;
-          }
-
-          const ws = toWorkspaceData(raw);
-          setWorkspace(ws);
-          await saveAnalysis(userId, cid, ws);
-        } catch (e) {
-          console.error('[products]', e);
-        } finally {
-          setAnalyzing(false);
-        }
-      })();
-    }
-
+    // 3. chat 스트리밍 먼저 완료
+    let fullResponse = '';
     try {
       const res = await fetch('/api/chat', {
         method: 'POST',
@@ -286,7 +252,6 @@ export function ChatPanel({ userId, chatId, onChatCreate }: ChatPanelProps) {
 
       const reader = res.body!.getReader();
       const decoder = new TextDecoder();
-      let fullResponse = '';
 
       while (true) {
         const { done, value: chunk } = await reader.read();
@@ -303,7 +268,6 @@ export function ChatPanel({ userId, chatId, onChatCreate }: ChatPanelProps) {
         });
       }
 
-      // Save full AI response
       await addMessage(userId, activeChatId, 'assistant', fullResponse);
     } catch (err) {
       const errorText = err instanceof Error ? err.message : '응답을 가져오는 중 오류가 발생했어요.';
@@ -314,6 +278,40 @@ export function ChatPanel({ userId, chatId, onChatCreate }: ChatPanelProps) {
       });
     } finally {
       setIsLoading(false);
+    }
+
+    // 4. chat 완료 후 상품 분석 (실패 시에만 Naver 폴백)
+    if (isProductQuery(userContent)) {
+      const cid = activeChatId;
+      setAnalyzing(true);
+      try {
+        const r = await fetch('/api/products', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query: userContent, tasteProfile }),
+        });
+        const raw = await r.json().catch(() => ({}));
+
+        if (!r.ok || raw.error || !raw.products?.length) {
+          // products API 실패 → Naver 검색 폴백
+          const sr = await fetch(`/api/search?q=${encodeURIComponent(userContent)}&display=10&sort=sim`);
+          const sd = await sr.json().catch(() => ({ items: [] }));
+          if (sd.items?.length > 0) {
+            const ws = naverItemsToWorkspace(userContent, sd.items);
+            setWorkspace(ws);
+            await saveAnalysis(userId, cid, ws);
+          }
+          return;
+        }
+
+        const ws = toWorkspaceData(raw);
+        setWorkspace(ws);
+        await saveAnalysis(userId, cid, ws);
+      } catch (e) {
+        console.error('[products]', e);
+      } finally {
+        setAnalyzing(false);
+      }
     }
   };
 
