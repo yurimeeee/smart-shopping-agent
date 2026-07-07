@@ -24,7 +24,7 @@ function detectCategory(product: ProductItem): string {
 type SortKey = 'latest' | 'price-asc' | 'price-desc' | 'ai-score' | 'discount';
 
 const SORT_OPTIONS: { key: SortKey; label: string }[] = [
-  { key: 'latest', label: 'recent' },
+  { key: 'latest', label: '최신순' },
   { key: 'price-asc', label: '가격 낮은순' },
   { key: 'price-desc', label: '가격 높은순' },
   { key: 'ai-score', label: 'AI점수순' },
@@ -226,13 +226,13 @@ export default function WishlistPage() {
         {/* 검색 + 정렬 드롭다운 */}
         <div className="mb-5 flex gap-3">
           <div className="relative flex-1">
-            <Search className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-zinc-400" />
+            <Search className="absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-zinc-400" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="상품명 또는 브랜드로 검색"
-              className="h-11 w-full rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 pl-10 pr-10 text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 focus:border-zinc-400 focus:outline-none"
+              placeholder="상품명 또는 브랜드 검색"
+              className="h-9 w-full rounded-xl border border-zinc-200 dark:border-zinc-700 bg-background pl-9 pr-9 text-xs text-foreground placeholder:text-zinc-400 focus:border-zinc-400 focus:outline-none sm:h-10 sm:text-sm"
             />
             {searchQuery && (
               <button
@@ -247,11 +247,12 @@ export default function WishlistPage() {
           <div className="relative">
             <button
               onClick={() => setSortOpen((v) => !v)}
-              className="flex h-11 items-center gap-2 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:border-zinc-300 transition-colors"
+              className="flex h-9 items-center gap-1.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-background px-3 text-xs font-medium text-foreground hover:border-zinc-400 transition-colors sm:h-10 sm:px-4 sm:text-sm"
             >
-              <span className="text-base leading-none text-zinc-400">≡</span>
-              {currentSort.label}
-              <ChevronDown className={cn('size-4 text-zinc-400 transition-transform', sortOpen && 'rotate-180')} />
+              <span className="hidden sm:inline text-muted-foreground">≡</span>
+              <span className="hidden sm:inline">{currentSort.label}</span>
+              <span className="sm:hidden text-muted-foreground text-[11px]">{currentSort.label}</span>
+              <ChevronDown className={cn('size-3.5 text-zinc-400 transition-transform', sortOpen && 'rotate-180')} />
             </button>
             {sortOpen && (
               <>
@@ -296,7 +297,7 @@ export default function WishlistPage() {
                   key={cat}
                   onClick={() => setActiveCategory(cat)}
                   className={cn(
-                    'flex shrink-0 items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium transition-colors',
+                    'flex shrink-0 items-center gap-1 rounded-full px-3 py-1 text-xs font-medium transition-colors sm:px-4 sm:py-1.5 sm:text-sm',
                     isActive
                       ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900'
                       : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700',
@@ -306,7 +307,7 @@ export default function WishlistPage() {
                   {cat !== '가격 하락만' && (
                     <span
                       className={cn(
-                        'text-xs tabular-nums',
+                        'text-[10px] tabular-nums sm:text-xs',
                         isActive ? 'opacity-60' : 'text-zinc-400 dark:text-zinc-500',
                       )}
                     >
@@ -321,9 +322,9 @@ export default function WishlistPage() {
 
         {/* 표시 개수 + 컬럼 선택 + 정렬 */}
         {!fetching && favorites.length > 0 && (
-          <div className="mb-5 flex items-center justify-between text-sm text-zinc-400">
+          <div className="mb-4 flex items-center justify-between text-xs text-zinc-400 sm:text-sm">
             <span>{filtered.length}개 상품 표시 중</span>
-            <span className="text-sm text-zinc-400">{sortLabel} 정렬</span>
+            <span>{sortLabel} 정렬</span>
           </div>
         )}
 
