@@ -1,10 +1,11 @@
 'use client';
 
-import { ShoppingBag, Eye, EyeOff, Loader2 } from 'lucide-react';
-import { useAuth } from '@/lib/auth-context';
+import { Eye, EyeOff, Loader2, ShoppingBag } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/lib/auth-context';
+import { useRouter } from 'next/navigation';
 
 const COOKIE_KEY = 'picks_saved_email';
 
@@ -100,12 +101,17 @@ export default function LoginPage() {
             {/* 이메일 폼 */}
             <form onSubmit={handleEmailLogin} className="space-y-3">
               <div className="space-y-1.5">
-                <label htmlFor="email" className="text-xs font-medium text-foreground">이메일</label>
+                <label htmlFor="email" className="block text-xs font-medium text-foreground mb-1">
+                  이메일
+                </label>
                 <input
                   id="email"
                   type="email"
                   value={email}
-                  onChange={(e) => { setEmail(e.target.value); setError(''); }}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    setError('');
+                  }}
                   placeholder="example@email.com"
                   autoComplete="email"
                   disabled={isSubmitting}
@@ -114,13 +120,18 @@ export default function LoginPage() {
               </div>
 
               <div className="space-y-1.5">
-                <label htmlFor="password" className="text-xs font-medium text-foreground">비밀번호</label>
+                <label htmlFor="password" className="block text-xs font-medium text-foreground mb-1">
+                  비밀번호
+                </label>
                 <div className="relative">
                   <input
                     id="password"
                     type={showPassword ? 'text' : 'password'}
                     value={password}
-                    onChange={(e) => { setPassword(e.target.value); setError(''); }}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      setError('');
+                    }}
                     placeholder="비밀번호 입력"
                     autoComplete="current-password"
                     disabled={isSubmitting}
@@ -143,9 +154,7 @@ export default function LoginPage() {
                   onClick={() => setRememberEmail((v) => !v)}
                   className={cn(
                     'flex size-4 shrink-0 items-center justify-center rounded border transition-colors',
-                    rememberEmail
-                      ? 'bg-foreground border-foreground'
-                      : 'border-zinc-300 dark:border-zinc-600 bg-background',
+                    rememberEmail ? 'bg-foreground border-foreground' : 'border-zinc-300 dark:border-zinc-600 bg-background',
                   )}
                 >
                   {rememberEmail && (
@@ -154,19 +163,12 @@ export default function LoginPage() {
                     </svg>
                   )}
                 </div>
-                <span
-                  onClick={() => setRememberEmail((v) => !v)}
-                  className="text-xs text-muted-foreground"
-                >
+                <span onClick={() => setRememberEmail((v) => !v)} className="text-xs text-muted-foreground">
                   이메일 저장
                 </span>
               </label>
 
-              {error && (
-                <p className="rounded-lg bg-rose-50 dark:bg-rose-950/30 px-3 py-2 text-xs text-rose-600 dark:text-rose-400">
-                  {error}
-                </p>
-              )}
+              {error && <p className="rounded-lg bg-rose-50 dark:bg-rose-950/30 px-3 py-2 text-xs text-rose-600 dark:text-rose-400">{error}</p>}
 
               <button
                 type="submit"
