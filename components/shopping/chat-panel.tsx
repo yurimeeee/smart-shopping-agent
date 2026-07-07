@@ -280,11 +280,12 @@ export function ChatPanel({ userId, chatId, onChatCreate }: ChatPanelProps) {
       setIsLoading(false);
     }
 
-    // 4. chat 완료 후 상품 분석 (실패 시에만 Naver 폴백)
-    if (isProductQuery(userContent)) {
-      const cid = activeChatId;
-      setAnalyzing(true);
-      try {
+    // 4. chat 완료 후 워크스페이스 채우기
+    const cid = activeChatId;
+    setAnalyzing(true);
+    try {
+      if (isProductQuery(userContent)) {
+        // 상품 쿼리 → products API 우선, 실패 시 Naver 폴백
         const r = await fetch('/api/products', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -293,7 +294,6 @@ export function ChatPanel({ userId, chatId, onChatCreate }: ChatPanelProps) {
         const raw = await r.json().catch(() => ({}));
 
         if (!r.ok || raw.error || !raw.products?.length) {
-          // products API 실패 → Naver 검색 폴백
           const sr = await fetch(`/api/search?q=${encodeURIComponent(userContent)}&display=10&sort=sim`);
           const sd = await sr.json().catch(() => ({ items: [] }));
           if (sd.items?.length > 0) {
@@ -307,11 +307,20 @@ export function ChatPanel({ userId, chatId, onChatCreate }: ChatPanelProps) {
         const ws = toWorkspaceData(raw);
         setWorkspace(ws);
         await saveAnalysis(userId, cid, ws);
-      } catch (e) {
-        console.error('[products]', e);
-      } finally {
-        setAnalyzing(false);
+      } else {
+        // 일반 쿼리 → products API 미호출, Naver 검색으로 바로 표시
+        const sr = await fetch(`/api/search?q=${encodeURIComponent(userContent)}&display=10&sort=sim`);
+        const sd = await sr.json().catch(() => ({ items: [] }));
+        if (sd.items?.length > 0) {
+          const ws = naverItemsToWorkspace(userContent, sd.items);
+          setWorkspace(ws);
+          await saveAnalysis(userId, cid, ws);
+        }
       }
+    } catch (e) {
+      console.error('[workspace]', e);
+    } finally {
+      setAnalyzing(false);
     }
   };
 
