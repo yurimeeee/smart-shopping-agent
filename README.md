@@ -6,6 +6,12 @@
 
 ## 시연 영상
 
+
+
+https://github.com/user-attachments/assets/efd07925-2d78-44de-ae67-afcd088e3e9d
+
+
+
 <video src="public/picks_demo.mp4" controls autoplay muted loop playsinline width="100%"></video>
 
 ---
