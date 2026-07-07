@@ -3,6 +3,7 @@ import './globals.css';
 import { Geist_Mono, Noto_Sans_KR } from 'next/font/google';
 import type { Metadata, Viewport } from 'next';
 
+import { Suspense } from 'react';
 import { Analytics } from '@vercel/analytics/next';
 import { AuthProvider } from '@/lib/auth-context';
 import { FloatingChat } from '@/components/shopping/floating-chat';
@@ -61,7 +62,9 @@ export default function RootLayout({
         <ThemeSync />
         <AuthProvider>
           {children}
-          <FloatingChat />
+          <Suspense fallback={null}>
+            <FloatingChat />
+          </Suspense>
         </AuthProvider>
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>

@@ -17,7 +17,7 @@ const HIDDEN_PATHS = ['/', '/login'];
 
 export function FloatingChat() {
   const pathname = usePathname();
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const { tasteProfile } = useStore();
 
   const [open, setOpen] = useState(false);
@@ -35,8 +35,8 @@ export function FloatingChat() {
     if (open) setTimeout(() => inputRef.current?.focus(), 100);
   }, [open]);
 
-  // 메인·로그인 페이지에서는 숨김
-  if (HIDDEN_PATHS.includes(pathname) || !user) return null;
+  // 메인·로그인 페이지, 비로그인 상태에서는 숨김
+  if (HIDDEN_PATHS.includes(pathname) || loading || !user) return null;
 
   const sendMessage = async () => {
     if (!value.trim() || isLoading) return;
