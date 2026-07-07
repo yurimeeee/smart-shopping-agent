@@ -38,25 +38,60 @@ function isProductQuery(text: string): boolean {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function toWorkspaceData(raw: any): WorkspaceData {
-  const products: ProductItem[] = raw.products.map((p: any) => ({
+  const products: ProductItem[] = (raw?.products ?? []).map((p: any) => ({
     ...p,
     image: p.image || '/placeholder.jpg',
     originalPrice: p.originalPrice > 0 ? p.originalPrice : undefined,
   }));
 
-  // API already returns comparisonMatrix in the new flow; fallback for old format
   const comparisonMatrix: ProductComparisonMatrix = raw.comparisonMatrix ?? {
     productIds: products.map((p) => p.id),
     specs: [],
   };
 
+  const rs = raw.reviewSummary ?? { totalReviews: 0, positiveRatio: 0, positiveTags: [], negativeTags: [], oneLineSummary: '' };
   const reviewSummary: ReviewSummary = {
-    ...raw.reviewSummary,
-    positiveTags: raw.reviewSummary.positiveTags.map((t: any) => ({ ...t, sentiment: 'positive' as const })),
-    negativeTags: raw.reviewSummary.negativeTags.map((t: any) => ({ ...t, sentiment: 'negative' as const })),
+    ...rs,
+    positiveTags: (rs.positiveTags ?? []).map((t: any) => ({ ...t, sentiment: 'positive' as const })),
+    negativeTags: (rs.negativeTags ?? []).map((t: any) => ({ ...t, sentiment: 'negative' as const })),
   };
 
-  return { title: raw.title, products, comparisonMatrix, reviewSummary };
+  return { title: raw.title ?? '', products, comparisonMatrix, reviewSummary };
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function naverItemsToWorkspace(query: string, items: any[]): WorkspaceData {
+  const products: ProductItem[] = items.map((item, i) => ({
+    id: item.id || String(i),
+    name: item.title,
+    brand: item.brand,
+    price: item.lprice,
+    originalPrice: item.hprice > item.lprice ? item.hprice : undefined,
+    image: item.image || '/placeholder.jpg',
+    link: item.link,
+    mallName: item.mallName,
+    rating: 4.0,
+    reviewCount: 0,
+    shipping: '판매처 확인 필요',
+    tags: [] as string[],
+    pros: [] as string[],
+    cons: [] as string[],
+    aiScore: 0,
+    recommended: i === 0,
+  }));
+  const productIds = products.map((p) => p.id);
+  return {
+    title: `"${query}" 검색 결과`,
+    products,
+    comparisonMatrix: { productIds, specs: [] },
+    reviewSummary: {
+      totalReviews: 0,
+      positiveRatio: 0,
+      positiveTags: [],
+      negativeTags: [],
+      oneLineSummary: 'AI 분석에 실패해 네이버 쇼핑 검색 결과를 표시합니다.',
+    },
+  };
 }
 
 function StepRow({ step }: { step: ReasoningStep }) {
@@ -147,9 +182,11 @@ export function ChatPanel({ userId, chatId, onChatCreate }: ChatPanelProps) {
   const { setWorkspace, setAnalyzing, setIsNewChat, tasteProfile } = useStore();
 
   const scrollToBottom = () => {
-    const viewport = scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]');
+    const viewport = scrollAreaRef.current?.querySelector('[data-slot="scroll-area-viewport"]');
     if (!viewport) return;
-    requestAnimationFrame(() => { viewport.scrollTop = viewport.scrollHeight; });
+    requestAnimationFrame(() => {
+      viewport.scrollTop = viewport.scrollHeight;
+    });
   };
 
   // Load messages + workspace when chatId changes (external switch)
@@ -203,19 +240,36 @@ export function ChatPanel({ userId, chatId, onChatCreate }: ChatPanelProps) {
     if (isProductQuery(userContent)) {
       const cid = activeChatId;
       setAnalyzing(true);
-      fetch('/api/products', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: userContent, tasteProfile }),
-      })
-        .then((r) => r.json())
-        .then((raw) => {
+      (async () => {
+        try {
+          const r = await fetch('/api/products', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ query: userContent, tasteProfile }),
+          });
+          const raw = await r.json().catch(() => ({}));
+
+          if (!r.ok || raw.error || !raw.products?.length) {
+            // 서버 실패 → 클라이언트 폴백: /api/search로 직접 네이버 검색
+            const sr = await fetch(`/api/search?q=${encodeURIComponent(userContent)}&display=10&sort=sim`);
+            const sd = await sr.json().catch(() => ({ items: [] }));
+            if (sd.items?.length > 0) {
+              const ws = naverItemsToWorkspace(userContent, sd.items);
+              setWorkspace(ws);
+              await saveAnalysis(userId, cid, ws);
+            }
+            return;
+          }
+
           const ws = toWorkspaceData(raw);
           setWorkspace(ws);
-          return saveAnalysis(userId, cid, ws);
-        })
-        .catch(console.error)
-        .finally(() => setAnalyzing(false));
+          await saveAnalysis(userId, cid, ws);
+        } catch (e) {
+          console.error('[products]', e);
+        } finally {
+          setAnalyzing(false);
+        }
+      })();
     }
 
     try {
@@ -295,7 +349,7 @@ export function ChatPanel({ userId, chatId, onChatCreate }: ChatPanelProps) {
 
       {/* Conversation */}
       <ScrollArea className="min-h-0 flex-1" ref={scrollAreaRef}>
-        <div className="space-y-5 px-5 py-6">
+        <div className="flex min-h-full flex-col px-5 py-6">
           {messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">
               <span className="mb-3 flex size-10 items-center justify-center rounded-xl bg-zinc-100 dark:bg-zinc-800 text-foreground">
@@ -305,7 +359,11 @@ export function ChatPanel({ userId, chatId, onChatCreate }: ChatPanelProps) {
               <p className="mt-1 text-xs text-muted-foreground">상품 링크를 붙여넣거나 원하는 것을 말씀해 주세요</p>
             </div>
           ) : (
-            messages.map((message, i) => <MessageBubble key={message.id} message={message} isStreaming={lastIsStreaming && i === messages.length - 1} />)
+            <div className="mt-auto space-y-5">
+              {messages.map((message, i) => (
+                <MessageBubble key={message.id} message={message} isStreaming={lastIsStreaming && i === messages.length - 1} />
+              ))}
+            </div>
           )}
         </div>
       </ScrollArea>
