@@ -109,7 +109,7 @@ export default function LoginPage() {
                   placeholder="example@email.com"
                   autoComplete="email"
                   disabled={isSubmitting}
-                  className="w-full rounded-xl border border-zinc-200 dark:border-zinc-700 bg-background px-3.5 py-2.5 text-sm text-foreground placeholder:text-zinc-400 focus:border-zinc-400 focus:outline-none transition-colors disabled:opacity-50"
+                  className="w-full rounded-lg border border-zinc-200 dark:border-zinc-700 bg-background px-3.5 py-2.5 text-sm text-foreground placeholder:text-zinc-400 focus:border-zinc-400 focus:outline-none transition-colors disabled:opacity-50"
                 />
               </div>
 
@@ -124,7 +124,7 @@ export default function LoginPage() {
                     placeholder="비밀번호 입력"
                     autoComplete="current-password"
                     disabled={isSubmitting}
-                    className="w-full rounded-xl border border-zinc-200 dark:border-zinc-700 bg-background px-3.5 py-2.5 pr-10 text-sm text-foreground placeholder:text-zinc-400 focus:border-zinc-400 focus:outline-none transition-colors disabled:opacity-50"
+                    className="w-full rounded-lg border border-zinc-200 dark:border-zinc-700 bg-background px-3.5 py-2.5 pr-10 text-sm text-foreground placeholder:text-zinc-400 focus:border-zinc-400 focus:outline-none transition-colors disabled:opacity-50"
                   />
                   <button
                     type="button"
@@ -172,7 +172,7 @@ export default function LoginPage() {
                 type="submit"
                 disabled={isSubmitting || !email.trim() || !password.trim()}
                 className={cn(
-                  'w-full rounded-xl py-2.5 text-sm font-semibold transition-all',
+                  'w-full rounded-lg py-2.5 text-sm font-semibold transition-all',
                   'bg-foreground text-background hover:opacity-80',
                   'disabled:opacity-40 disabled:cursor-not-allowed',
                   'flex items-center justify-center gap-2',
@@ -193,7 +193,7 @@ export default function LoginPage() {
             {/* Google 로그인 */}
             <button
               onClick={signInWithGoogle}
-              className="w-full flex items-center justify-center gap-3 rounded-xl border border-border bg-background py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800"
+              className="w-full flex items-center justify-center gap-3 rounded-lg border border-border bg-background py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800"
             >
               <GoogleIcon />
               Google로 계속하기
