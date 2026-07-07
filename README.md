@@ -110,7 +110,7 @@ NAVER_CLIENT_SECRET=
 
 ## 배포 URL
 
-🔗 https://smart-shopping-agent-34al.vercel.app/
+🔗 https://smart-shopping-agent-picks.vercel.app/
 
 ---
 
@@ -121,7 +121,7 @@ NAVER_CLIENT_SECRET=
 | 이메일 | test@picks.com |
 | 비밀번호 | test1234 |
 
-또는 **Google 계정으로 소셜 로그인**도 가능합니다.
+또는 **Google 계정으로 소셜 로그인**도 가능.
 
 ---
 
@@ -236,6 +236,7 @@ NAVER_CLIENT_SECRET=
 - **구매 이력 연동**: 영수증 이미지 OCR 또는 이메일 파싱으로 실제 소비 리포트 생성
 - **상품 URL 직접 분석**: 쿠팡/네이버 상품 URL 붙여넣기 → 해당 상품 즉시 분석
 - **비교 즐겨찾기**: 여러 상품을 직접 선택해 커스텀 비교표 생성
+- **Gemini 토큰 부족**: Gemini 토큰 부족으로 인해 데모 테스트 시, 실제 Ai와 대화가 어려울 수 있습니다. (필히 개선 필요)
 
 ---
 
