@@ -88,23 +88,64 @@ const reviewSummarySchema = {
   required: ['totalReviews', 'positiveRatio', 'positiveTags', 'negativeTags', 'oneLineSummary'],
 };
 
+function buildNaverFallback(query: string, naverItems: NaverItem[]) {
+  const products = naverItems.map((item, i) => {
+    const lprice = parseInt(item.lprice) || 0;
+    const hprice = parseInt(item.hprice) || 0;
+    return {
+      id: item.productId || String(i),
+      name: stripHtml(item.title),
+      brand: item.brand || item.maker || item.mallName,
+      price: lprice,
+      originalPrice: hprice > lprice ? hprice : undefined,
+      image: proxyImage(item.image),
+      link: item.link,
+      mallName: item.mallName,
+      rating: 4.0,
+      reviewCount: 0,
+      shipping: '판매처 확인 필요',
+      tags: [] as string[],
+      pros: [] as string[],
+      cons: [] as string[],
+      aiScore: 0,
+      recommended: i === 0,
+    };
+  });
+  const productIds = products.map((p) => p.id);
+  return {
+    title: `"${query}" 검색 결과`,
+    products,
+    comparisonMatrix: { productIds, specs: [] },
+    reviewSummary: {
+      totalReviews: 0,
+      positiveRatio: 0,
+      positiveTags: [],
+      negativeTags: [],
+      oneLineSummary: 'AI 분석을 불러오지 못해 네이버 쇼핑 검색 결과를 표시합니다.',
+    },
+  };
+}
+
 export async function POST(req: Request) {
   const { query, tasteProfile } = await req.json() as { query: string; tasteProfile?: TasteProfile };
 
   const naverId = process.env.NAVER_CLIENT_ID;
   const naverSecret = process.env.NAVER_CLIENT_SECRET;
   const geminiKey = process.env.GEMINI_API_KEY;
-  if (!geminiKey) return Response.json({ error: 'No API key' }, { status: 500 });
+
+  // Step 1: Naver Shopping 검색 (Gemini 실패 시 폴백용으로 먼저 실행)
+  const naverItems = naverId && naverSecret
+    ? await searchNaverShopping(query, naverId, naverSecret).catch(() => [] as NaverItem[])
+    : [] as NaverItem[];
+
+  if (!geminiKey) {
+    if (naverItems.length > 0) return Response.json(buildNaverFallback(query, naverItems));
+    return Response.json({ error: 'No API key' }, { status: 500 });
+  }
 
   const ai = new GoogleGenAI({ apiKey: geminiKey });
 
   try {
-    // Step 1: Naver Shopping에서 실제 상품 검색
-    const naverItems = naverId && naverSecret
-      ? await searchNaverShopping(query, naverId, naverSecret)
-      : [];
-
-    // Step 2: Naver 결과가 있으면 Gemini로 분석, 없으면 Gemini 단독 생성
     if (naverItems.length > 0) {
       const productSummaries = naverItems.map((item, i) => ({
         index: i,
@@ -260,7 +301,8 @@ export async function POST(req: Request) {
     return Response.json({ title: data.title, products: data.products, comparisonMatrix, reviewSummary: data.reviewSummary });
 
   } catch (err) {
-    console.error('[products/route]', err);
+    console.error('[products/route] Gemini error, trying Naver fallback:', err);
+    if (naverItems.length > 0) return Response.json(buildNaverFallback(query, naverItems));
     return Response.json({ error: String(err) }, { status: 500 });
   }
 }
