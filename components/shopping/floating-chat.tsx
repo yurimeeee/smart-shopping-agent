@@ -1,10 +1,11 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
 import { ArrowUp, Loader2, MessageSquare, Sparkles, X } from 'lucide-react';
-import { usePathname } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
+
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/lib/auth-context';
+import { usePathname } from 'next/navigation';
 import { useStore } from '@/lib/store';
 
 interface Message {
@@ -13,7 +14,8 @@ interface Message {
   content: string;
 }
 
-const HIDDEN_PATHS = ['/', '/login'];
+// const HIDDEN_PATHS = ['/', '/login'];
+const HIDDEN_PATHS = ['/login'];
 
 export function FloatingChat() {
   const pathname = usePathname();
@@ -131,7 +133,7 @@ export function FloatingChat() {
         </div>
 
         {/* 메시지 영역 */}
-        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
+        <div className="flex flex-1 flex-col overflow-y-auto px-4 py-4">
           {messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center gap-2">
               <span className="flex size-9 items-center justify-center rounded-xl bg-zinc-100 dark:bg-zinc-800">
@@ -141,32 +143,28 @@ export function FloatingChat() {
               <p className="text-[11px] text-muted-foreground">상품 추천, 비교, 가격 분석을 도와드려요</p>
             </div>
           ) : (
-            messages.map((msg, i) => (
-              <div key={msg.id} className={cn('flex', msg.role === 'user' ? 'justify-end' : 'justify-start')}>
-                {msg.role === 'assistant' && (
-                  <span className="mr-2 mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800">
-                    <Sparkles className="size-3 text-foreground" />
-                  </span>
-                )}
-                <div
-                  className={cn(
-                    'max-w-[80%] rounded-2xl px-3 py-2 text-xs leading-relaxed',
-                    msg.role === 'user'
-                      ? 'rounded-tr-sm bg-foreground text-background'
-                      : 'rounded-tl-sm bg-zinc-100 dark:bg-zinc-800 text-foreground',
+            <div className="mt-auto space-y-3">
+              {messages.map((msg, i) => (
+                <div key={msg.id} className={cn('flex', msg.role === 'user' ? 'justify-end' : 'justify-start')}>
+                  {msg.role === 'assistant' && (
+                    <span className="mr-2 mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800">
+                      <Sparkles className="size-3 text-foreground" />
+                    </span>
                   )}
-                >
-                  {msg.content || (
-                    isLoading && i === messages.length - 1
-                      ? <Loader2 className="size-3 animate-spin" />
-                      : null
-                  )}
-                  {msg.role === 'assistant' && isLoading && i === messages.length - 1 && msg.content && (
-                    <span className="ml-0.5 inline-block h-3 w-0.5 animate-pulse bg-foreground align-middle" />
-                  )}
+                  <div
+                    className={cn(
+                      'max-w-[80%] rounded-2xl px-3 py-2 text-xs leading-relaxed',
+                      msg.role === 'user' ? 'rounded-tr-sm bg-foreground text-background' : 'rounded-tl-sm bg-zinc-100 dark:bg-zinc-800 text-foreground',
+                    )}
+                  >
+                    {msg.content || (isLoading && i === messages.length - 1 ? <Loader2 className="size-3 animate-spin" /> : null)}
+                    {msg.role === 'assistant' && isLoading && i === messages.length - 1 && msg.content && (
+                      <span className="ml-0.5 inline-block h-3 w-0.5 animate-pulse bg-foreground align-middle" />
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))
+              ))}
+            </div>
           )}
           <div ref={bottomRef} />
         </div>

@@ -101,7 +101,7 @@ export default function LoginPage() {
             {/* 이메일 폼 */}
             <form onSubmit={handleEmailLogin} className="space-y-3">
               <div className="space-y-1.5">
-                <label htmlFor="email" className="block text-xs font-medium text-foreground mb-1">
+                <label htmlFor="email" className="block text-xs font-medium text-foreground mb-2">
                   이메일
                 </label>
                 <input
@@ -120,7 +120,7 @@ export default function LoginPage() {
               </div>
 
               <div className="space-y-1.5">
-                <label htmlFor="password" className="block text-xs font-medium text-foreground mb-1">
+                <label htmlFor="password" className="block text-xs font-medium text-foreground mb-2">
                   비밀번호
                 </label>
                 <div className="relative">
