@@ -4,6 +4,12 @@
 
 ---
 
+## 시연 영상
+
+<video src="public/picks_demo.mp4" controls autoplay muted loop playsinline width="100%"></video>
+
+---
+
 ## 서비스명 및 한 줄 소개
 
 **PickS** — 네이버 쇼핑 실시간 검색 + Gemini AI 분석을 결합한 개인 맞춤형 AI 쇼핑 큐레이터 플랫폼
