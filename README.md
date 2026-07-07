@@ -1,6 +1,6 @@
 # PickS — AI 쇼핑 큐레이터
 
-> "수천 개의 상품 대신 당신에게 딱 맞는 것만 픽(Pick)해드립니다"
+> 네이버 쇼핑 실시간 검색 + Gemini AI 분석을 결합한 개인 맞춤형 AI 쇼핑 큐레이터 플랫폼
 
 ---
 
@@ -13,12 +13,6 @@ https://github.com/user-attachments/assets/efd07925-2d78-44de-ae67-afcd088e3e9d
 
 
 <video src="public/picks_demo.mp4" controls autoplay muted loop playsinline width="100%"></video>
-
----
-
-## 서비스명 및 한 줄 소개
-
-**PickS** — 네이버 쇼핑 실시간 검색 + Gemini AI 분석을 결합한 개인 맞춤형 AI 쇼핑 큐레이터 플랫폼
 
 ---
 
