@@ -301,7 +301,7 @@ export default function WishlistPage() {
   return (
     <div className="min-h-dvh bg-white dark:bg-zinc-950">
       <SiteHeader active="wishlist" />
-      <main className="mx-auto max-w-7xl px-6 py-10">
+      <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
 
         {/* 제목 */}
         <div className="mb-7">
