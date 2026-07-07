@@ -215,7 +215,13 @@ export default function SearchPage() {
     <div className="min-h-dvh bg-background">
       <SiteHeader active="search" />
 
-      <div className="mx-auto max-w-6xl px-4 py-6">
+      <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
+        {/* 타이틀 */}
+        <div className="mb-6">
+          <h1 className="text-balance text-xl font-semibold tracking-tight text-foreground">상품 검색</h1>
+          <p className="mt-1 text-sm text-muted-foreground">네이버 쇼핑 실시간 검색 결과를 확인하고 관심상품을 저장해보세요.</p>
+        </div>
+
         {/* 검색바 */}
         <form onSubmit={handleSearch} className="flex gap-2">
           <div className="flex flex-1 items-center gap-2 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-background px-4 py-2.5 focus-within:border-zinc-400 transition-colors">

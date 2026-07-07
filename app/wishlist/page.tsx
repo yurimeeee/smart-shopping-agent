@@ -279,19 +279,13 @@ export default function WishlistPage() {
       <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
 
         {/* 제목 */}
-        <div className="mb-7">
-          <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">관심 상품</h1>
-          {!fetching && (
-            <p className="mt-1.5 text-sm text-zinc-500">
-              총 {favorites.length}개의 상품을 관심 목록에 담아두었어요
-              {priceDropItems.length > 0 && (
-                <>
-                  {' · '}지금{' '}
-                  <span className="font-semibold text-blue-500">{priceDropItems.length}개</span>가 가격 하락 중
-                </>
-              )}
-            </p>
-          )}
+        <div className="mb-6">
+          <h1 className="text-balance text-xl font-semibold tracking-tight text-foreground">관심 상품</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {!fetching
+              ? <>총 {favorites.length}개의 상품을 관심 목록에 담아두었어요{priceDropItems.length > 0 && <> · 지금 <span className="font-semibold text-blue-500">{priceDropItems.length}개</span>가 가격 하락 중</>}</>
+              : '관심 목록을 불러오는 중이에요'}
+          </p>
         </div>
 
         {/* 검색 + 정렬 드롭다운 */}
