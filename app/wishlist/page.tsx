@@ -440,8 +440,8 @@ export default function WishlistPage() {
           </div>
         ) : (
           <div className={cn(
-            'grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4',
-            mobileCols === 4 ? 'grid-cols-4 gap-1.5 sm:gap-4' : mobileCols === 2 ? 'grid-cols-2 gap-3 sm:gap-4' : 'grid-cols-1 gap-4',
+            'grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 sm:gap-3',
+            mobileCols === 4 ? 'grid-cols-4 gap-1.5' : mobileCols === 2 ? 'grid-cols-2 gap-3' : 'grid-cols-1 gap-4',
           )}>
             {filtered.map((item) => (
               <FavoriteCard
