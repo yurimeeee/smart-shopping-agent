@@ -5,6 +5,7 @@ import type { Metadata, Viewport } from 'next';
 
 import { Analytics } from '@vercel/analytics/next';
 import { AuthProvider } from '@/lib/auth-context';
+import { FloatingChat } from '@/components/shopping/floating-chat';
 import { ThemeSync } from '@/components/theme-sync';
 
 const notoSansKr = Noto_Sans_KR({
@@ -58,7 +59,10 @@ export default function RootLayout({
     <html lang="ko" className={`bg-background ${notoSansKr.variable} ${geistMono.variable}`}>
       <body className="font-sans antialiased">
         <ThemeSync />
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider>
+          {children}
+          <FloatingChat />
+        </AuthProvider>
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>
