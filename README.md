@@ -104,13 +104,13 @@ NAVER_CLIENT_SECRET=
 
 ## 배포 URL
 
-> 추후 업데이트 예정
+🔗 https://smart-shopping-agent-34al.vercel.app/
 
 ---
 
 ## 테스트 계정 정보
 
-Google 소셜 로그인을 사용합니다. 별도 회원가입 없이 Google 계정으로 바로 로그인 가능합니다.
+별도 회원가입 없이 **Google 계정으로 바로 로그인** 가능합니다.
 
 ---
 
