@@ -6,6 +6,23 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 
+const COOKIE_KEY = 'picks_saved_email';
+
+function getSavedEmail(): string {
+  const match = document.cookie.split('; ').find((r) => r.startsWith(`${COOKIE_KEY}=`));
+  return match ? decodeURIComponent(match.split('=')[1]) : '';
+}
+
+function setSavedEmail(email: string) {
+  const expires = new Date();
+  expires.setDate(expires.getDate() + 30);
+  document.cookie = `${COOKIE_KEY}=${encodeURIComponent(email)}; expires=${expires.toUTCString()}; path=/; SameSite=Lax`;
+}
+
+function clearSavedEmail() {
+  document.cookie = `${COOKIE_KEY}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+}
+
 export default function LoginPage() {
   const { user, loading, signInWithGoogle, signInWithEmail } = useAuth();
   const router = useRouter();
@@ -15,6 +32,16 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [rememberEmail, setRememberEmail] = useState(false);
+
+  // 쿠키에 저장된 이메일 불러오기
+  useEffect(() => {
+    const saved = getSavedEmail();
+    if (saved) {
+      setEmail(saved);
+      setRememberEmail(true);
+    }
+  }, []);
 
   useEffect(() => {
     if (!loading && user) router.replace('/');
@@ -34,6 +61,8 @@ export default function LoginPage() {
     setError('');
     setIsSubmitting(true);
     try {
+      if (rememberEmail) setSavedEmail(email.trim());
+      else clearSavedEmail();
       await signInWithEmail(email.trim(), password);
     } catch (err: unknown) {
       const code = (err as { code?: string }).code ?? '';
@@ -107,6 +136,31 @@ export default function LoginPage() {
                   </button>
                 </div>
               </div>
+
+              {/* 이메일 저장 체크박스 */}
+              <label className="flex items-center gap-2 cursor-pointer select-none w-fit">
+                <div
+                  onClick={() => setRememberEmail((v) => !v)}
+                  className={cn(
+                    'flex size-4 shrink-0 items-center justify-center rounded border transition-colors',
+                    rememberEmail
+                      ? 'bg-foreground border-foreground'
+                      : 'border-zinc-300 dark:border-zinc-600 bg-background',
+                  )}
+                >
+                  {rememberEmail && (
+                    <svg viewBox="0 0 10 8" className="size-2.5 text-background" fill="none">
+                      <path d="M1 4l2.5 2.5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  )}
+                </div>
+                <span
+                  onClick={() => setRememberEmail((v) => !v)}
+                  className="text-xs text-muted-foreground"
+                >
+                  이메일 저장
+                </span>
+              </label>
 
               {error && (
                 <p className="rounded-lg bg-rose-50 dark:bg-rose-950/30 px-3 py-2 text-xs text-rose-600 dark:text-rose-400">
