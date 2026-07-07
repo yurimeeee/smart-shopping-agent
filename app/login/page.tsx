@@ -1,19 +1,23 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
-import { ShoppingBag } from 'lucide-react';
+import { ShoppingBag, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { cn } from '@/lib/utils';
 
 export default function LoginPage() {
-  const { user, loading, signInWithGoogle } = useAuth();
+  const { user, loading, signInWithGoogle, signInWithEmail } = useAuth();
   const router = useRouter();
 
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState('');
+
   useEffect(() => {
-    if (!loading && user) {
-      router.replace('/');
-    }
+    if (!loading && user) router.replace('/');
   }, [user, loading, router]);
 
   if (loading) {
@@ -23,6 +27,27 @@ export default function LoginPage() {
       </div>
     );
   }
+
+  const handleEmailLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim() || !password.trim()) return;
+    setError('');
+    setIsSubmitting(true);
+    try {
+      await signInWithEmail(email.trim(), password);
+    } catch (err: unknown) {
+      const code = (err as { code?: string }).code ?? '';
+      if (code === 'auth/invalid-credential' || code === 'auth/wrong-password' || code === 'auth/user-not-found') {
+        setError('이메일 또는 비밀번호가 올바르지 않습니다.');
+      } else if (code === 'auth/too-many-requests') {
+        setError('로그인 시도가 너무 많습니다. 잠시 후 다시 시도해주세요.');
+      } else {
+        setError('로그인 중 오류가 발생했습니다. 다시 시도해주세요.');
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="flex h-dvh flex-col items-center justify-center bg-background px-4">
@@ -40,16 +65,85 @@ export default function LoginPage() {
 
         {/* Card */}
         <div className="rounded-2xl border border-border bg-card p-8 shadow-sm">
-          <div className="space-y-4">
-            <div className="text-center">
-              {/* <h2 className="text-base font-semibold text-foreground">시작하기</h2> */}
-              <p className="text-xs text-muted-foreground">로그인하고 AI 쇼핑 가이드를 시작해 보세요.</p>
+          <div className="space-y-5">
+            <p className="text-center text-xs text-muted-foreground">로그인하고 AI 쇼핑 가이드를 시작해 보세요.</p>
+
+            {/* 이메일 폼 */}
+            <form onSubmit={handleEmailLogin} className="space-y-3">
+              <div className="space-y-1.5">
+                <label htmlFor="email" className="text-xs font-medium text-foreground">이메일</label>
+                <input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => { setEmail(e.target.value); setError(''); }}
+                  placeholder="example@email.com"
+                  autoComplete="email"
+                  disabled={isSubmitting}
+                  className="w-full rounded-xl border border-zinc-200 dark:border-zinc-700 bg-background px-3.5 py-2.5 text-sm text-foreground placeholder:text-zinc-400 focus:border-zinc-400 focus:outline-none transition-colors disabled:opacity-50"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label htmlFor="password" className="text-xs font-medium text-foreground">비밀번호</label>
+                <div className="relative">
+                  <input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={(e) => { setPassword(e.target.value); setError(''); }}
+                    placeholder="비밀번호 입력"
+                    autoComplete="current-password"
+                    disabled={isSubmitting}
+                    className="w-full rounded-xl border border-zinc-200 dark:border-zinc-700 bg-background px-3.5 py-2.5 pr-10 text-sm text-foreground placeholder:text-zinc-400 focus:border-zinc-400 focus:outline-none transition-colors disabled:opacity-50"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((v) => !v)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-foreground transition-colors"
+                    tabIndex={-1}
+                  >
+                    {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                  </button>
+                </div>
+              </div>
+
+              {error && (
+                <p className="rounded-lg bg-rose-50 dark:bg-rose-950/30 px-3 py-2 text-xs text-rose-600 dark:text-rose-400">
+                  {error}
+                </p>
+              )}
+
+              <button
+                type="submit"
+                disabled={isSubmitting || !email.trim() || !password.trim()}
+                className={cn(
+                  'w-full rounded-xl py-2.5 text-sm font-semibold transition-all',
+                  'bg-foreground text-background hover:opacity-80',
+                  'disabled:opacity-40 disabled:cursor-not-allowed',
+                  'flex items-center justify-center gap-2',
+                )}
+              >
+                {isSubmitting && <Loader2 className="size-4 animate-spin" />}
+                로그인
+              </button>
+            </form>
+
+            {/* 구분선 */}
+            <div className="flex items-center gap-3">
+              <div className="h-px flex-1 bg-border" />
+              <span className="text-[11px] text-muted-foreground">또는</span>
+              <div className="h-px flex-1 bg-border" />
             </div>
 
-            <Button onClick={signInWithGoogle} variant="outline" className="w-full gap-3 py-5 text-sm font-medium">
+            {/* Google 로그인 */}
+            <button
+              onClick={signInWithGoogle}
+              className="w-full flex items-center justify-center gap-3 rounded-xl border border-border bg-background py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800"
+            >
               <GoogleIcon />
               Google로 계속하기
-            </Button>
+            </button>
           </div>
         </div>
 
