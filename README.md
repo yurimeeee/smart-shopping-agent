@@ -1,70 +1,36 @@
 # PickS — AI 쇼핑 큐레이터
 
-> 네이버 쇼핑 실시간 검색 + Gemini AI 분석을 결합한 개인 맞춤형 AI 쇼핑 큐레이터 플랫폼
-
----
+> "수천 개의 상품 대신 당신에게 딱 맞는 것만 픽(Pick)해드립니다"
 
 ## 시연 영상
 
+<video src="https://raw.githubusercontent.com/yurimeeee/smart-shopping-agent/main/public/picks_demo.mp4" controls autoplay muted loop playsinline width="100%"></video>
 
+## 소개
 
-https://github.com/user-attachments/assets/efd07925-2d78-44de-ae67-afcd088e3e9d
+**PickS**는 네이버 쇼핑 실시간 검색 결과에 Gemini AI 분석을 붙인 개인 맞춤형 쇼핑 큐레이터입니다.
 
-
-
-<video src="public/picks_demo.mp4" controls autoplay muted loop playsinline width="100%"></video>
-
----
-
-## 문제 정의
-
-온라인 쇼핑 시 다음과 같은 문제가 반복됩니다.
-
-- 검색 결과가 수백~수천 개로 비교 자체가 피로함
-- 리뷰가 많아도 핵심 정보를 추출하기 어려움
-- 가격·스펙·배송 조건을 여러 탭을 오가며 직접 비교해야 함
-- 취향과 상황에 맞는 추천을 받을 수 없음
-
-PickS는 이 과정을 AI와의 자연어 대화 한 번으로 압축합니다.
-
----
+쇼핑할 때 검색 결과가 너무 많아 비교가 피곤하거나, 리뷰는 많은데 핵심만 골라 읽기 어렵거나, 가격/스펙/배송을 비교하려고 탭을 여러 개 띄워야 했던 경험에서 시작했습니다. PickS에서는 원하는 걸 자연어로 한 번 말하면 실제 상품 검색부터 장단점 분석, 스펙 비교, 리뷰 요약까지 한 화면에서 끝납니다.
 
 ## 주요 기능
 
-| 기능 | 설명 |
-|------|------|
-| AI 쇼핑 채팅 | Gemini AI와 자연어 대화로 상품 추천 요청 |
-| 실시간 상품 분석 | 네이버 쇼핑 API 검색 결과를 Gemini가 분석, 장단점·AI 추천 지수 제공 |
-| 상품 비교 테이블 | 스펙·가격·배송·AI 종합 점수를 한 화면에서 비교 |
-| 리뷰 감성 분석 | 수천 건 리뷰를 긍정/부정 키워드로 압축 요약 |
-| 관심상품 위시리스트 | 상품 저장, 카테고리·가격 하락 필터, 모바일 그리드 선택 |
-| 소비 리포트 | 관심상품 기반 예상 소비 패턴 시각화 |
-| 취향 프로필 | 소비 성향·라이프스타일 태그 설정 → AI 추천 개인화 |
-| 드래그 리사이즈 패널 | 채팅·분석 패널 너비 자유 조절 (데스크톱) |
-| 반응형 UI | 모바일/데스크톱 레이아웃 완전 지원 |
+- **AI 쇼핑 채팅**: Gemini와 자연어로 대화하며 상품 추천 요청
+- **실시간 상품 분석**: 네이버 쇼핑 검색 결과를 Gemini가 분석해 장단점과 AI 추천 지수 제공
+- **상품 비교 테이블**: 스펙·가격·배송·AI 종합 점수를 한 화면에서 비교
+- **리뷰 감성 분석**: 리뷰를 긍정/부정 키워드로 압축 요약
+- **관심상품 위시리스트**: 상품 저장, 카테고리/가격 하락 필터, 모바일 그리드 선택
+- **소비 리포트**: 관심상품 기반 예상 소비 패턴 시각화
+- **취향 프로필**: 소비 성향·라이프스타일 태그로 추천 개인화
+- **드래그 리사이즈 패널**: 채팅·분석 패널 너비 자유 조절 (데스크톱)
+- 모바일/데스크톱 반응형 레이아웃
 
----
+## 기술 스택
 
-## 사용 기술 스택
+**Frontend**: Next.js 16 (App Router, React 19), TypeScript, Tailwind CSS v4, Zustand, Radix UI / shadcn/ui, Recharts
 
-**Frontend**
-- Next.js 16 (App Router, React 19)
-- TypeScript
-- Tailwind CSS v4
-- Zustand (전역 상태 관리)
-- Radix UI / shadcn/ui (컴포넌트)
-- Recharts (차트)
+**Backend / API**: Next.js Route Handlers, Google Gemini AI (`gemini-2.5-flash` 채팅 스트리밍, `gemini-2.0-flash` 상품 분석 구조화 출력), Naver Shopping Search API
 
-**Backend / API**
-- Next.js Route Handlers (서버리스 API)
-- Google Gemini AI (`gemini-2.5-flash` 채팅 스트리밍, `gemini-2.0-flash` 상품 분석 구조화 출력)
-- Naver Shopping Search API (실제 상품 검색 + 이미지)
-
-**인프라 / 데이터**
-- Firebase Authentication (Google OAuth)
-- Firebase Firestore (대화, 관심상품, 취향 프로필 저장)
-
----
+**인프라 / 데이터**: Firebase Authentication (Google OAuth), Firebase Firestore (대화, 관심상품, 취향 프로필 저장)
 
 ## 실행 방법
 
@@ -77,18 +43,14 @@ PickS는 이 과정을 AI와의 자연어 대화 한 번으로 압축합니다.
 ### 설치 및 실행
 
 ```bash
-# 저장소 클론
 git clone https://github.com/yurimeeee/smart-shopping-agent.git
 cd smart-shopping-agent
 
-# 패키지 설치
 pnpm install   # 또는 npm install
 
-# 환경변수 설정
 cp .env.example .env.local
 # .env.local 에 Firebase, Gemini, Naver API 키 입력
 
-# 개발 서버 실행
 pnpm dev       # http://localhost:3000
 ```
 
@@ -106,13 +68,13 @@ NAVER_CLIENT_ID=
 NAVER_CLIENT_SECRET=
 ```
 
----
-
 ## 배포 URL
 
-🔗 https://smart-shopping-agent-picks.vercel.app/
+🔗 https://smart-shopping-agent-34al.vercel.app/
 
----
+## 주의사항
+
+> Gemini API를 무료 티어로 사용 중이라 일일/분당 토큰·요청 한도가 있습니다. 시연 중 AI 채팅이나 상품 분석 응답이 오지 않는다면 버그보다는 **토큰 사용량 초과**일 가능성이 높습니다. 잠시 후 다시 시도해 주세요.
 
 ## 테스트 계정 정보
 
@@ -121,133 +83,45 @@ NAVER_CLIENT_SECRET=
 | 이메일 | test@picks.com |
 | 비밀번호 | test1234 |
 
-또는 **Google 계정으로 소셜 로그인**도 가능.
+Google 계정으로 소셜 로그인도 가능합니다.
 
----
+## 동작 구조
 
-## LLM / Agent 동작 구조
+사용자가 채팅에 메시지를 보내면 두 가지가 동시에 진행됩니다.
 
-```
-사용자 입력 (자연어 쿼리)
-        │
-        ├─ [채팅 응답] ──────────────────────────────────────────┐
-        │   POST /api/chat                                        │
-        │   └─ Gemini 2.5-flash (스트리밍)                       │
-        │       시스템 프롬프트: 쇼핑 큐레이터 역할 + 취향 컨텍스트  │
-        │       → 텍스트 스트림으로 즉시 응답                      │
-        │                                                         ▼
-        │                                               채팅 패널에 실시간 표시
-        │
-        └─ [상품 분석] (상품 관련 키워드 감지 시 병렬 실행)
-            POST /api/products
-            │
-            ├── Step 1: Naver Shopping API 검색
-            │   쿼리로 실제 상품 5개 fetch
-            │   → 상품명, 브랜드, 가격, 이미지, 링크
-            │
-            ├── Step 2: Gemini 2.0-flash 분석 (구조화 출력)
-            │   실제 상품 데이터를 프롬프트로 전달
-            │   responseSchema로 JSON 강제 출력:
-            │   → 장점/단점, AI 추천 점수(0~100), 태그
-            │   → 스펙 비교 테이블, 리뷰 감성 요약
-            │
-            └── Step 3: 병합 & 반환
-                Naver 데이터(이미지/가격/링크) + Gemini 분석 결합
-                → 워크스페이스 패널에 큐레이션/비교/리뷰 탭으로 표시
-                → Firestore에 대화별 분석 결과 저장
-```
+1. **채팅 응답** — `POST /api/chat`이 Gemini 2.5-flash에 취향 프로필을 포함한 시스템 프롬프트를 전달하고, 응답을 스트리밍으로 받아 채팅 패널에 바로 표시합니다.
+2. **상품 분석** — 메시지에 상품 관련 키워드가 있으면 `POST /api/products`가 병렬로 실행됩니다. 네이버 쇼핑 API로 실제 상품 5개를 검색한 뒤, Gemini 2.0-flash에 `responseSchema`로 구조화 출력을 강제해 장단점·추천 점수·스펙 비교·리뷰 요약을 뽑아냅니다. 네이버에서 받은 이미지/가격/링크와 Gemini 분석 결과를 합쳐 워크스페이스 패널에 표시하고, Firestore에 대화별로 저장합니다.
 
----
-
-## 데이터 흐름
-
-```
-[사용자]
-  │
-  │ 1. Google 로그인
-  ▼
-[Firebase Auth] ──── UID 반환 ──────────────────────────────┐
-                                                             │
-  │ 2. 쇼핑 질문 입력                                         │
-  ▼                                                          │
-[ChatPanel]                                                  │
-  ├── POST /api/chat ──► Gemini Stream ──► 텍스트 응답         │
-  │   Firestore: users/{uid}/chats/{chatId}/messages 저장     │
-  │                                                           │
-  └── POST /api/products (병렬)                               │
-        │                                                     │
-        ├── Naver Shopping API ──► 실제 상품 목록              │
-        │                                                     │
-        ├── Gemini API ──► 구조화 분석 JSON                   │
-        │                                                     │
-        └── 병합 결과                                          │
-              │                                               │
-              ├── WorkspacePanel 업데이트 (Zustand)            │
-              └── Firestore: chats/{chatId}.analysis 저장     │
-                                                              │
-  │ 3. 관심상품 추가                                           │
-  ▼                                                           │
-[Firestore] users/{uid}/favorites ◄──────────────────────────┘
-  │
-  ▼
-[위시리스트 페이지] onSnapshot 실시간 구독
-  │
-  └── [취향 프로필] users/{uid}/profile/taste 유저별 독립 저장
-```
-
----
+인증은 Firebase Auth(Google 로그인)로 처리하고, 대화 기록과 관심상품, 취향 프로필은 모두 `users/{uid}` 하위에 Firestore로 저장해 유저별로 완전히 분리됩니다. 위시리스트 페이지는 `onSnapshot`으로 실시간 구독합니다.
 
 ## 본인이 중점적으로 구현한 부분
 
-**1. Naver Shopping + Gemini 하이브리드 분석 파이프라인**
-- LLM이 가상 상품을 생성하는 대신, 실제 존재하는 상품을 검색 후 Gemini가 분석하는 구조로 설계
-- `responseSchema`를 활용한 구조화 출력으로 안정적인 JSON 파싱 보장
+**Naver Shopping + Gemini 하이브리드 분석 파이프라인** — LLM이 상품을 지어내는 대신, 실제 존재하는 상품을 먼저 검색하고 그 결과를 Gemini가 분석하도록 설계했습니다. `responseSchema`로 JSON 출력을 강제해 파싱이 깨지지 않도록 했습니다.
 
-**2. 드래그 리사이즈 패널**
-- CSS Grid 대신 flex + pixel width 방식으로 전환
-- `useRef` + `useEffect` 동기화 패턴으로 stale closure 문제 해결
-- `requestAnimationFrame`으로 사이드바 토글 시 초기 너비 계산 타이밍 보정
+**드래그 리사이즈 패널** — CSS Grid 대신 flex + pixel width 방식으로 바꾸고, `useRef` + `useEffect` 동기화로 stale closure 문제를 해결했습니다. 사이드바 토글 시 초기 너비 계산 타이밍은 `requestAnimationFrame`으로 보정했습니다.
 
-**3. 유저별 상태 완전 격리**
-- Zustand persist 범위를 theme만으로 제한
-- `onAuthStateChanged`에서 UID 변경 감지 시 전역 상태 초기화
-- 취향 프로필을 localStorage가 아닌 Firestore `users/{uid}/profile/taste`에 저장
+**유저별 상태 완전 격리** — Zustand persist 범위를 theme으로만 제한하고, `onAuthStateChanged`에서 UID 변경을 감지하면 전역 상태를 초기화합니다. 취향 프로필은 localStorage가 아니라 Firestore `users/{uid}/profile/taste`에 저장합니다.
 
-**4. 이미지 프록시 서버**
-- `/api/image-proxy`를 통해 Naver CDN 이미지를 서버 사이드에서 fetch
-- CDN 핫링크 차단 우회 + 캐시 헤더 적용
-
----
+**이미지 프록시 서버** — `/api/image-proxy`로 네이버 CDN 이미지를 서버 사이드에서 받아와 핫링크 차단을 우회하고 캐시 헤더를 붙였습니다.
 
 ## 구현하지 못한 부분
 
-- **실제 리뷰 데이터 연동**: 현재 리뷰 요약은 Gemini가 추정하는 값으로, 실제 크롤링/API 기반 리뷰 데이터가 아님
-- **가격 히스토리 추적**: 관심상품 추가 시 가격 변동 이력 저장 및 알림 미구현
-- **Coupang / 29CM 등 플랫폼 직접 연동**: 비공개 API로 인해 네이버 쇼핑 경유만 가능
-- **소비 리포트 실데이터**: 현재 더미 데이터 기반, 실제 구매 내역 연동 미구현
-- **테스트 코드**: 단위/통합 테스트 미작성
-
----
+- 실제 리뷰 데이터 연동: 지금 리뷰 요약은 Gemini가 추정한 값이고, 실제 크롤링/API 기반 데이터는 아닙니다
+- 가격 히스토리 추적 및 알림 미구현
+- Coupang / 29CM 등 타 플랫폼 직접 연동 (비공개 API라 네이버 쇼핑 경유만 가능)
+- 소비 리포트는 더미 데이터 기반, 실 구매 내역 연동 미구현
+- 단위/통합 테스트 미작성
 
 ## 향후 개선 방향
 
-- **멀티턴 대화 컨텍스트**: 이전 대화 내용을 Gemini 컨텍스트로 누적하여 맥락 기반 추천
-- **가격 알림**: Cloud Functions + FCM으로 관심상품 가격 하락 푸시 알림
-- **구매 이력 연동**: 영수증 이미지 OCR 또는 이메일 파싱으로 실제 소비 리포트 생성
-- **상품 URL 직접 분석**: 쿠팡/네이버 상품 URL 붙여넣기 → 해당 상품 즉시 분석
-- **비교 즐겨찾기**: 여러 상품을 직접 선택해 커스텀 비교표 생성
-- **Gemini 토큰 부족**: Gemini 토큰 부족으로 인해 데모 테스트 시, 실제 Ai와 대화가 어려울 수 있습니다. (필히 개선 필요)
-
----
+- 멀티턴 대화 컨텍스트: 이전 대화를 Gemini 컨텍스트에 누적해 맥락 기반 추천
+- 가격 알림: Cloud Functions + FCM으로 관심상품 가격 하락 푸시
+- 구매 이력 연동: 영수증 OCR 또는 이메일 파싱으로 실제 소비 리포트 생성
+- 상품 URL 붙여넣으면 바로 분석하는 기능
+- 여러 상품을 직접 골라 커스텀 비교표 만들기
 
 ## AI 개발 도구 활용 여부
 
-**Claude Code (Anthropic)** 를 주요 개발 도구로 활용했습니다.
+**Claude Code (Anthropic)**을 주요 개발 도구로 활용했습니다. 컴포넌트 설계·구현(위시리스트 리디자인, 드래그 리사이즈 패널, 모바일 반응형 UI), 버그 디버깅(stale closure, 이미지 CDN 차단, 유저 상태 격리), Firestore 데이터 구조 설계, Gemini 구조화 출력 스키마 및 네이버 API 연동 파이프라인 구현, 커밋 메시지 작성 등에 사용했습니다.
 
-- 컴포넌트 설계 및 구현 (위시리스트 리디자인, 드래그 리사이즈 패널, 모바일 반응형 UI 등)
-- 버그 디버깅 (stale closure, 이미지 CDN 차단, 유저 상태 격리 문제 등)
-- Firebase Firestore 데이터 구조 설계 및 CRUD 함수 작성
-- Gemini API 구조화 출력 스키마 설계 및 Naver Shopping API 연동 파이프라인 구현
-- git 커밋 메시지 작성
-
-코드 생성 비율이 높으나, 전체 아키텍처 결정, 기능 방향 설정, 디버깅 판단 등 핵심 의사결정은 직접 수행했습니다.
+코드 생성 비율은 높지만 전체 아키텍처 결정, 기능 방향, 디버깅 판단 등 핵심 의사결정은 직접 했습니다.
