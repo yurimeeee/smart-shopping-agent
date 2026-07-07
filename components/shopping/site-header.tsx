@@ -9,7 +9,7 @@ import { useAuth } from '@/lib/auth-context';
 import { useRouter } from 'next/navigation';
 import { useStore } from '@/lib/store';
 
-type ActivePage = 'assistant' | 'wishlist' | 'report';
+type ActivePage = 'assistant' | 'wishlist' | 'report' | 'search';
 
 interface SiteHeaderProps {
   active?: ActivePage;
@@ -18,6 +18,7 @@ interface SiteHeaderProps {
 
 const navItems: { key: ActivePage; label: string; href: string }[] = [
   { key: 'assistant', label: '쇼핑 큐레이터', href: '/' },
+  { key: 'search', label: '상품 검색', href: '/search' },
   { key: 'wishlist', label: '관심상품', href: '/wishlist' },
   { key: 'report', label: '소비 리포트', href: '/report' },
 ];

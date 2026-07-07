@@ -125,6 +125,9 @@ export default function Page() {
           <a href="/" className="rounded-full bg-zinc-100 dark:bg-zinc-800 px-2 sm:px-3 py-1 sm:py-1.5 text-[10px] sm:text-xs font-medium text-foreground whitespace-nowrap">
             쇼핑 큐레이터
           </a>
+          <a href="/search" className="rounded-full px-2 sm:px-3 py-1 sm:py-1.5 text-[10px] sm:text-xs font-medium text-muted-foreground transition-colors hover:text-foreground whitespace-nowrap">
+            상품 검색
+          </a>
           <a href="/wishlist" className="rounded-full px-2 sm:px-3 py-1 sm:py-1.5 text-[10px] sm:text-xs font-medium text-muted-foreground transition-colors hover:text-foreground whitespace-nowrap">
             관심상품
           </a>
