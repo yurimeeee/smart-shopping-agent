@@ -27,20 +27,16 @@ export function FloatingChat() {
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  // 메인·로그인 페이지에서는 숨김
-  if (HIDDEN_PATHS.includes(pathname) || !user) return null;
-
-  const scrollToBottom = () => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
   useEffect(() => {
-    scrollToBottom();
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
   useEffect(() => {
     if (open) setTimeout(() => inputRef.current?.focus(), 100);
   }, [open]);
+
+  // 메인·로그인 페이지에서는 숨김
+  if (HIDDEN_PATHS.includes(pathname) || !user) return null;
 
   const sendMessage = async () => {
     if (!value.trim() || isLoading) return;
