@@ -18,6 +18,19 @@ function stripHtml(html: string): string {
   return html.replace(/<[^>]*>/g, '');
 }
 
+// 대화체 쿼리 → 네이버 쇼핑 검색어로 정제
+function toSearchKeyword(query: string): string {
+  let q = query;
+  // "추천해줘, 지인" 처럼 쉼표 뒤 수신자 문구 제거
+  q = q.replace(/[,，]\s*(지인|친구|남자\s*친구|여자\s*친구|남친|여친|부모님|엄마|아빠|남편|아내|부장님|상사|동료|선배|후배|아이|아기|본인|자신|나).*/g, '');
+  // 문장 끝 대화체 동사구 제거
+  q = q.replace(/\s*(추천\s*해\s*줘|추천\s*해\s*주세요|추천\s*좀|알려\s*줘|알려\s*주세요|골라\s*줘|골라\s*주세요|사야\s*해|살까요?|구매\s*해\s*줘|뭐가\s*좋|어떤\s*[게거걸것](\s*좋)?|어떤\s*거\s*좋아?)\s*$/i, '');
+  // 수신자 단독 단어 제거 (이미 쉼표 처리 안 된 경우)
+  q = q.replace(/\s+(지인|친구|선물용|선물\s*용)(\s|$)/g, ' ');
+  q = q.replace(/[,，\s]+$/, '').replace(/\s+/g, ' ').trim();
+  return q || query;
+}
+
 function proxyImage(url: string): string {
   if (!url) return '';
   return `/api/image-proxy?url=${encodeURIComponent(url)}`;
@@ -134,8 +147,9 @@ export async function POST(req: Request) {
   const geminiKey = process.env.GEMINI_API_KEY;
 
   // Step 1: Naver Shopping 검색 (Gemini 실패 시 폴백용으로 먼저 실행)
+  const searchKeyword = toSearchKeyword(query);
   const naverItems = naverId && naverSecret
-    ? await searchNaverShopping(query, naverId, naverSecret).catch(() => [] as NaverItem[])
+    ? await searchNaverShopping(searchKeyword, naverId, naverSecret).catch(() => [] as NaverItem[])
     : [] as NaverItem[];
 
   if (!geminiKey) {

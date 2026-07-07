@@ -1,10 +1,21 @@
+function toSearchKeyword(query: string): string {
+  let q = query;
+  q = q.replace(/[,，]\s*(지인|친구|남자\s*친구|여자\s*친구|남친|여친|부모님|엄마|아빠|남편|아내|부장님|상사|동료|선배|후배|아이|아기|본인|자신|나).*/g, '');
+  q = q.replace(/\s*(추천\s*해\s*줘|추천\s*해\s*주세요|추천\s*좀|알려\s*줘|알려\s*주세요|골라\s*줘|골라\s*주세요|사야\s*해|살까요?|구매\s*해\s*줘|뭐가\s*좋|어떤\s*[게거걸것](\s*좋)?|어떤\s*거\s*좋아?)\s*$/i, '');
+  q = q.replace(/\s+(지인|친구|선물용|선물\s*용)(\s|$)/g, ' ');
+  q = q.replace(/[,，\s]+$/, '').replace(/\s+/g, ' ').trim();
+  return q || query;
+}
+
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
-  const query = searchParams.get('q');
+  const rawQuery = searchParams.get('q');
   const sort = searchParams.get('sort') ?? 'sim';
   const display = Math.min(Number(searchParams.get('display') ?? 20), 100);
 
-  if (!query) return Response.json({ items: [] });
+  if (!rawQuery) return Response.json({ items: [] });
+
+  const query = toSearchKeyword(rawQuery);
 
   const naverId = process.env.NAVER_CLIENT_ID;
   const naverSecret = process.env.NAVER_CLIENT_SECRET;
