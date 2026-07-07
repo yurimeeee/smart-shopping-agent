@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ChevronDown, Search, Star, TrendingDown, TrendingUp, X } from 'lucide-react';
+import { ChevronDown, ExternalLink, Heart, Search, X } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { subscribeFavorites, removeFavorite, type FavoriteItem } from '@/lib/firestore';
 import { SiteHeader } from '@/components/shopping/site-header';
@@ -75,146 +75,121 @@ function timeAgo(date: Date): string {
   return `${Math.floor(days / 30)}개월 전 추가`;
 }
 
-function ProductThumbnail({ product }: { product: ProductItem }) {
-  const [failed, setFailed] = useState(false);
-  const hue = product.name.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0) % 360;
-  const hasRealImage = product.image && !product.image.includes('placeholder') && !failed;
-
-  return hasRealImage ? (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      src={product.image}
-      alt={product.name}
-      className="absolute inset-0 size-full object-contain p-6"
-      onError={() => setFailed(true)}
-    />
-  ) : (
-    <div
-      className="absolute inset-0 flex items-center justify-center"
-      style={{ background: `linear-gradient(135deg, hsl(${hue},30%,95%), hsl(${hue},45%,85%))` }}
-    >
-      <span className="text-5xl font-black opacity-10" style={{ color: `hsl(${hue},50%,20%)` }}>
-        {product.brand[0]}
-      </span>
-    </div>
-  );
-}
-
 function FavoriteCard({ item, onRemove, cols }: { item: FavoriteItem; onRemove: () => void; cols: MobileCols }) {
   const { product, savedAt } = item;
+  const [imgFailed, setImgFailed] = useState(false);
+
   const discountPct =
     product.originalPrice && product.originalPrice > product.price
       ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
       : 0;
-  const isPriceUp = !!(product.originalPrice && product.originalPrice < product.price);
-  const isSoldOut = product.shipping?.includes('품절');
+
+  const hasRealImage = product.image && !product.image.includes('placeholder') && !imgFailed;
+  const productLink = product.link
+    ?? `https://search.shopping.naver.com/search/all?query=${encodeURIComponent(`${product.brand} ${product.name}`)}`;
 
   /* ── 4컬럼 컴팩트 카드 (모바일 전용) ── */
   if (cols === 4) {
     return (
-      <article className="flex flex-col overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900">
-        <div className="relative aspect-square bg-zinc-50 dark:bg-zinc-800">
-          <ProductThumbnail product={product} />
-          {isSoldOut && (
-            <span className="absolute left-1 top-1 rounded bg-zinc-700 px-1 py-0.5 text-[8px] font-bold text-white">품절</span>
-          )}
-          {discountPct > 0 && (
-            <span className="absolute left-1 bottom-1 rounded bg-white/90 dark:bg-zinc-900/90 px-1 py-0.5 text-[8px] font-bold text-blue-500">-{discountPct}%</span>
+      <a
+        href={productLink}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="group flex flex-col overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-700 bg-background"
+      >
+        <div className="relative aspect-square bg-zinc-50 dark:bg-zinc-900 overflow-hidden">
+          {hasRealImage ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={product.image} alt={product.name} className="absolute inset-0 size-full object-contain p-2" onError={() => setImgFailed(true)} />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="text-2xl font-black text-zinc-200 dark:text-zinc-700">{product.brand?.[0] ?? '?'}</span>
+            </div>
           )}
           <button
-            onClick={onRemove}
-            className="absolute right-1 top-1 flex size-5 items-center justify-center rounded-full bg-white/80 dark:bg-zinc-900/80 text-zinc-400 hover:text-rose-500 transition-colors"
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); onRemove(); }}
+            className="absolute right-1 top-1 flex size-5 items-center justify-center rounded-full bg-background/80 backdrop-blur text-rose-500"
+            title="관심상품 해제"
           >
-            <X className="size-2.5" />
+            <Heart className="size-2.5 fill-rose-500" />
           </button>
         </div>
-        <div className="p-1.5 flex flex-col gap-0.5">
-          <p className="text-[10px] font-medium leading-tight line-clamp-2 text-zinc-800 dark:text-zinc-200">{product.name}</p>
-          <p className="text-[11px] font-bold tabular-nums text-zinc-900 dark:text-zinc-100">{formatPrice(product.price)}원</p>
+        <div className="p-1.5">
+          <p className="text-[10px] font-medium leading-tight line-clamp-2 text-foreground">{product.name}</p>
+          <p className="mt-0.5 text-[11px] font-bold tabular-nums text-foreground">{formatPrice(product.price)}원</p>
         </div>
-      </article>
+      </a>
     );
   }
 
   /* ── 일반 카드 (1·2컬럼) ── */
   return (
-    <article className="flex flex-col overflow-hidden rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 hover:shadow-md transition-shadow">
-      {/* 이미지 영역 */}
-      <div className="relative aspect-[4/3] bg-zinc-50 dark:bg-zinc-800">
-        <ProductThumbnail product={product} />
-        {isSoldOut && (
-          <span className="absolute left-3 top-3 rounded-md bg-zinc-700 px-2 py-0.5 text-[11px] font-semibold text-white">
-            품절
+    <a
+      href={productLink}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="group flex flex-col overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-700 bg-background transition-shadow hover:shadow-md"
+    >
+      {/* 이미지 */}
+      <div className="relative aspect-square bg-zinc-50 dark:bg-zinc-900 overflow-hidden">
+        {hasRealImage ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={product.image}
+            alt={product.name}
+            className="absolute inset-0 size-full object-contain p-3 transition-transform duration-200 group-hover:scale-105"
+            onError={() => setImgFailed(true)}
+          />
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <span className="text-3xl font-black text-zinc-200 dark:text-zinc-700">{product.brand?.[0] ?? '?'}</span>
+          </div>
+        )}
+        {/* 쇼핑몰 뱃지 */}
+        {product.mallName && (
+          <span className="absolute bottom-2 left-2 rounded-full bg-background/90 backdrop-blur px-2 py-0.5 text-[10px] font-medium text-muted-foreground border border-zinc-200 dark:border-zinc-700">
+            {product.mallName}
           </span>
         )}
+        {/* 할인 뱃지 */}
+        {discountPct > 0 && (
+          <span className="absolute left-2 top-2 rounded-full bg-rose-500 px-2 py-0.5 text-[10px] font-bold text-white">
+            -{discountPct}%
+          </span>
+        )}
+        {/* 하트 (해제) 버튼 */}
         <button
-          onClick={onRemove}
-          className="absolute right-3 top-3 flex size-7 items-center justify-center rounded-full bg-white/80 dark:bg-zinc-900/80 text-zinc-400 hover:text-rose-500 transition-colors backdrop-blur-sm border border-zinc-200 dark:border-zinc-700"
-          title="관심상품 삭제"
+          onClick={(e) => { e.preventDefault(); e.stopPropagation(); onRemove(); }}
+          className="absolute right-2 top-2 flex size-7 items-center justify-center rounded-full bg-background/80 backdrop-blur border border-zinc-200 dark:border-zinc-700 text-rose-500 hover:opacity-70 transition-opacity"
+          title="관심상품 해제"
         >
-          <X className="size-3.5" />
+          <Heart className="size-3.5 fill-rose-500" />
         </button>
       </div>
 
-      {/* 상품 정보 */}
-      <div className="flex flex-1 flex-col p-4 gap-2">
-        {/* 브랜드 + 추가일 */}
-        <div className="flex items-center justify-between">
-          <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">{product.brand}</span>
-          <span className="text-[11px] text-zinc-400">{timeAgo(savedAt)}</span>
-        </div>
-
-        {/* 상품명 */}
-        <h3 className="text-sm font-semibold leading-snug text-zinc-900 dark:text-zinc-100 line-clamp-2">
-          {product.name}
-        </h3>
-
-        {/* 별점 + 리뷰 + AI점수 */}
-        <div className="flex items-center gap-1 text-xs">
-          <Star className="size-3 fill-amber-400 text-amber-400" />
-          <span className="font-semibold text-zinc-700 dark:text-zinc-300">{product.rating}</span>
-          <span className="text-zinc-400">({product.reviewCount.toLocaleString()})</span>
-          <span className="ml-auto rounded bg-zinc-900 dark:bg-zinc-100 px-1.5 py-0.5 text-[10px] font-bold text-white dark:text-zinc-900">
-            AI {product.aiScore}
-          </span>
-        </div>
-
-        {/* 가격 + 구매하기 */}
-        <div className="mt-auto flex items-end justify-between gap-2 pt-1">
-          <div className="min-w-0">
-            <p className="text-base font-bold text-zinc-900 dark:text-zinc-100 tabular-nums">
-              {formatPrice(product.price)}원
-            </p>
-            <div className="flex items-center gap-1 text-xs">
-              {discountPct > 0 && (
-                <>
-                  <TrendingDown className="size-3 shrink-0 text-blue-500" />
-                  <span className="font-semibold text-blue-500">{discountPct}%</span>
-                  <span className="text-zinc-400 line-through tabular-nums">
-                    {formatPrice(product.originalPrice!)}원
-                  </span>
-                </>
-              )}
-              {isPriceUp && (
-                <>
-                  <TrendingUp className="size-3 shrink-0 text-rose-500" />
-                  <span className="font-semibold text-rose-500">가격 상승</span>
-                </>
-              )}
-              {!discountPct && !isPriceUp && <span className="text-zinc-400">{product.shipping}</span>}
-            </div>
-          </div>
-          <a
-            href={`https://search.shopping.naver.com/search/all?query=${encodeURIComponent(`${product.brand} ${product.name}`)}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="shrink-0 rounded-lg border border-zinc-200 dark:border-zinc-600 px-3 py-1.5 text-xs font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors whitespace-nowrap"
-          >
-            {isSoldOut ? '재판매 문의' : '구매하기'}
-          </a>
+      {/* 정보 */}
+      <div className="flex flex-1 flex-col gap-1 p-3">
+        {product.brand && (
+          <p className="text-[11px] text-muted-foreground truncate">{product.brand}</p>
+        )}
+        <p className="text-xs font-medium text-foreground line-clamp-2 leading-snug">{product.name}</p>
+        <div className="mt-auto pt-2">
+          {discountPct > 0 && (
+            <p className="text-[10px] text-zinc-400 line-through">{formatPrice(product.originalPrice!)}원</p>
+          )}
+          <p className="text-sm font-bold text-foreground">
+            {formatPrice(product.price)}<span className="text-xs font-medium">원</span>
+          </p>
+          <p className="mt-0.5 text-[10px] text-zinc-400">{timeAgo(savedAt)}</p>
         </div>
       </div>
-    </article>
+
+      {/* 구매하러 가기 */}
+      <div className="flex items-center gap-1 border-t border-zinc-100 dark:border-zinc-800 px-3 py-2 text-[11px] font-medium text-muted-foreground group-hover:text-foreground transition-colors">
+        <ExternalLink className="size-3" />
+        구매하러 가기
+      </div>
+    </a>
   );
 }
 
