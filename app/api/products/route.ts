@@ -89,6 +89,25 @@ const reviewSummarySchema = {
   required: ['totalReviews', 'positiveRatio', 'positiveTags', 'negativeTags', 'oneLineSummary'],
 };
 
+interface ComparisonSpecInput {
+  key: string;
+  label: string;
+  values: string[];
+  bestIndex: number;
+}
+
+function buildComparisonMatrix(productIds: string[], specs: ComparisonSpecInput[] | undefined) {
+  return {
+    productIds,
+    specs: (specs ?? []).map((s) => ({
+      key: s.key,
+      label: s.label,
+      values: Object.fromEntries(productIds.map((id, i) => [id, s.values[i] ?? ''])),
+      best: s.bestIndex >= 0 ? productIds[s.bestIndex] : undefined,
+    })),
+  };
+}
+
 function buildNaverFallback(query: string, naverItems: NaverItem[]) {
   const products = naverItems.map((item, i) => {
     const lprice = parseInt(item.lprice) || 0;
@@ -129,6 +148,10 @@ function buildNaverFallback(query: string, naverItems: NaverItem[]) {
 
 export async function POST(req: Request) {
   const { query, tasteProfile } = await req.json() as { query: string; tasteProfile?: TasteProfile };
+
+  if (!query?.trim()) {
+    return Response.json({ error: 'query가 비어있어요.' }, { status: 400 });
+  }
 
   const naverId = process.env.NAVER_CLIENT_ID;
   const naverSecret = process.env.NAVER_CLIENT_SECRET;
@@ -228,16 +251,7 @@ export async function POST(req: Request) {
       });
 
       const productIds = products.map((p: { id: string }) => p.id);
-      const comparisonMatrix = {
-        productIds,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        specs: (analysis.comparisonSpecs ?? []).map((s: any) => ({
-          key: s.key,
-          label: s.label,
-          values: Object.fromEntries(productIds.map((id: string, i: number) => [id, s.values[i] ?? ''])),
-          best: s.bestIndex >= 0 ? productIds[s.bestIndex] : undefined,
-        })),
-      };
+      const comparisonMatrix = buildComparisonMatrix(productIds, analysis.comparisonSpecs);
 
       return Response.json({ title: analysis.title, products, comparisonMatrix, reviewSummary: analysis.reviewSummary });
     }
@@ -289,16 +303,7 @@ export async function POST(req: Request) {
 
     const data = JSON.parse(text);
     const productIds = data.products.map((p: { id: string }) => p.id);
-    const comparisonMatrix = {
-      productIds,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      specs: (data.comparisonSpecs ?? []).map((s: any) => ({
-        key: s.key,
-        label: s.label,
-        values: Object.fromEntries(productIds.map((id: string, i: number) => [id, s.values[i] ?? ''])),
-        best: s.bestIndex >= 0 ? productIds[s.bestIndex] : undefined,
-      })),
-    };
+    const comparisonMatrix = buildComparisonMatrix(productIds, data.comparisonSpecs);
 
     return Response.json({ title: data.title, products: data.products, comparisonMatrix, reviewSummary: data.reviewSummary });
 

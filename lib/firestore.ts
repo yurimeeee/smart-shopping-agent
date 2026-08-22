@@ -91,7 +91,8 @@ function makeFavoriteDocId(product: ProductItem): string {
 
 export async function addFavorite(userId: string, product: ProductItem): Promise<void> {
   const docId = makeFavoriteDocId(product);
-  await addDoc(collection(db, 'users', userId, 'favorites'), {
+  // setDoc + 해시를 문서 ID로 사용 — 동일 상품 중복 저장 방지 (addDoc은 매번 새 ID를 발급해 중복이 쌓임)
+  await setDoc(doc(db, 'users', userId, 'favorites', docId), {
     docId,
     product: clean(product),
     savedAt: serverTimestamp(),
@@ -137,17 +138,6 @@ export function subscribeFavorites(
       })),
     );
   });
-}
-
-export async function getFavoriteDocIds(userId: string): Promise<Record<string, string>> {
-  const q = query(collection(db, 'users', userId, 'favorites'));
-  const snap = await getDocs(q);
-  const map: Record<string, string> = {};
-  snap.docs.forEach((d) => {
-    const product = d.data().product as ProductItem;
-    map[makeFavoriteDocId(product)] = d.id;
-  });
-  return map;
 }
 
 export { makeFavoriteDocId };

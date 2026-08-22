@@ -48,6 +48,7 @@ export function FloatingChat() {
 
     const userMsg: Message = { id: `u${Date.now()}`, role: 'user', content: userContent };
     const assistantMsg: Message = { id: `a${Date.now()}`, role: 'assistant', content: '' };
+    const conversationHistory = [...messages, userMsg].map((m) => ({ role: m.role, content: m.content }));
     setMessages((prev) => [...prev, userMsg, assistantMsg]);
     setIsLoading(true);
 
@@ -56,7 +57,7 @@ export function FloatingChat() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          messages: [{ role: 'user', content: userContent }],
+          messages: conversationHistory,
           tasteProfile,
         }),
       });

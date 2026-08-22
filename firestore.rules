@@ -1,0 +1,89 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
+    function isString(v) { return v is string; }
+    function isTimestamp(v) { return v is timestamp; }
+
+    match /users/{userId} {
+
+      // ── 대화 (chats) ──
+      match /chats/{chatId} {
+        allow read, delete: if isOwner(userId);
+
+        allow create: if isOwner(userId)
+          && request.resource.data.keys().hasOnly(['title', 'createdAt', 'updatedAt'])
+          && isString(request.resource.data.title)
+          // size()는 UTF-8 바이트 기준 — 클라이언트는 문자 50자로 자르므로(한글 최대 3바이트) 여유있게 설정
+          && request.resource.data.title.size() <= 200
+          && isTimestamp(request.resource.data.createdAt)
+          && isTimestamp(request.resource.data.updatedAt);
+
+        // addMessage → updatedAt만 갱신, saveAnalysis → analysis + updatedAt 갱신
+        allow update: if isOwner(userId)
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['updatedAt', 'analysis'])
+          && isTimestamp(request.resource.data.updatedAt);
+
+        // ── 메시지 ──
+        match /messages/{messageId} {
+          allow read, delete: if isOwner(userId);
+
+          allow create: if isOwner(userId)
+            && request.resource.data.keys().hasOnly(['role', 'content', 'createdAt'])
+            && request.resource.data.role in ['user', 'assistant']
+            && isString(request.resource.data.content)
+            // 클라이언트에 글자수 제한 없음 — 남용 방지용 상한만 (바이트 기준, 한글 약 6,600자)
+            && request.resource.data.content.size() <= 20000
+            && isTimestamp(request.resource.data.createdAt);
+
+          // 메시지는 수정 불가 (기록 보존)
+          allow update: if false;
+        }
+      }
+
+      // ── 관심상품 (favorites) ──
+      match /favorites/{docId} {
+        allow read, delete: if isOwner(userId);
+
+        allow create: if isOwner(userId)
+          && request.resource.data.keys().hasOnly(['docId', 'product', 'savedAt'])
+          && request.resource.data.docId == docId
+          && request.resource.data.product is map
+          && isTimestamp(request.resource.data.savedAt);
+
+        // setDoc(merge 없이 동일 docId 재저장)만 허용 — 필드 구조는 create와 동일
+        allow update: if isOwner(userId)
+          && request.resource.data.keys().hasOnly(['docId', 'product', 'savedAt'])
+          && request.resource.data.docId == docId
+          && request.resource.data.product is map
+          && isTimestamp(request.resource.data.savedAt);
+      }
+
+      // ── 취향 프로필 ──
+      match /profile/taste {
+        allow read: if isOwner(userId);
+
+        allow write: if isOwner(userId)
+          && request.resource.data.keys().hasOnly(['tags', 'customNote', 'platforms', 'priceBalance'])
+          && request.resource.data.tags is list
+          && isString(request.resource.data.customNote)
+          // 클라이언트 textarea에 글자수 제한 없음 — 남용 방지용 상한만 (바이트 기준, 한글 약 2,000자)
+          && request.resource.data.customNote.size() <= 6000
+          && request.resource.data.platforms is list
+          && request.resource.data.priceBalance is number
+          && request.resource.data.priceBalance >= 0
+          && request.resource.data.priceBalance <= 100;
+      }
+    }
+
+    // 그 외 모든 경로는 기본 차단
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

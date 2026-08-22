@@ -221,6 +221,7 @@ export function ChatPanel({ userId, chatId, onChatCreate }: ChatPanelProps) {
 
     const userMsg: ChatMessage = { id: `u${Date.now()}`, role: 'user', content: userContent, timestamp: now };
     const assistantMsg: ChatMessage = { id: `a${Date.now()}`, role: 'assistant', content: '', timestamp: now };
+    const conversationHistory = [...messages, userMsg].map((m) => ({ role: m.role, content: m.content }));
 
     setMessages((prev) => [...prev, userMsg, assistantMsg]);
     setIsLoading(true);
@@ -242,7 +243,7 @@ export function ChatPanel({ userId, chatId, onChatCreate }: ChatPanelProps) {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: [{ role: 'user', content: userContent }], tasteProfile }),
+        body: JSON.stringify({ messages: conversationHistory, tasteProfile }),
       });
 
       if (!res.ok) {

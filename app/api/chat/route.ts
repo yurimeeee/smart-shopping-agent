@@ -21,13 +21,20 @@ export async function POST(req: Request) {
     return Response.json({ error: 'GEMINI_API_KEY가 설정되지 않았어요.' }, { status: 500 });
   }
 
-  const userMessage = messages[messages.length - 1].content;
+  if (!messages?.length) {
+    return Response.json({ error: 'messages가 비어있어요.' }, { status: 400 });
+  }
+
+  const contents = messages.map((m) => ({
+    role: m.role === 'assistant' ? 'model' : 'user',
+    parts: [{ text: m.content }],
+  }));
 
   try {
     const ai = new GoogleGenAI({ apiKey });
     const response = await ai.models.generateContentStream({
       model: 'gemini-2.5-flash',
-      contents: [{ role: 'user', parts: [{ text: userMessage }] }],
+      contents,
       config: {
         systemInstruction: systemPrompt,
       },
