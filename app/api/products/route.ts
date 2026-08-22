@@ -184,7 +184,7 @@ export async function POST(req: Request) {
       const prompt = `사용자 요청: "${query}"\n\n실제 검색된 상품 목록:\n${JSON.stringify(productSummaries, null, 2)}\n\n위 상품들을 분석해주세요.`;
 
       const response = await ai.models.generateContent({
-        model: 'gemini-2.0-flash',
+        model: 'gemini-2.5-flash',
         contents: [{ role: 'user', parts: [{ text: prompt }] }],
         config: {
           systemInstruction: ANALYSIS_SYSTEM_PROMPT + tasteCtx,
@@ -259,7 +259,7 @@ export async function POST(req: Request) {
     // Fallback: Naver 결과 없을 때 Gemini 단독 생성
     const tasteCtx = tasteProfile ? buildTasteContext(tasteProfile) : '';
     const response = await ai.models.generateContent({
-      model: 'gemini-2.0-flash',
+      model: 'gemini-2.5-flash',
       contents: [{ role: 'user', parts: [{ text: query }] }],
       config: {
         systemInstruction: GEMINI_ONLY_SYSTEM_PROMPT + tasteCtx,
