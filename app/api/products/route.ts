@@ -26,7 +26,7 @@ function proxyImage(url: string): string {
 
 async function searchNaverShopping(query: string, clientId: string, clientSecret: string): Promise<NaverItem[]> {
   const q = encodeURIComponent(query);
-  const res = await fetch(`https://openapi.naver.com/v1/search/shop.json?query=${q}&display=5&sort=sim`, {
+  const res = await fetch(`https://openapi.naver.com/v1/search/shop.json?query=${q}&display=12&sort=sim`, {
     headers: {
       'X-Naver-Client-Id': clientId,
       'X-Naver-Client-Secret': clientSecret,
@@ -37,7 +37,9 @@ async function searchNaverShopping(query: string, clientId: string, clientSecret
   return data.items ?? [];
 }
 
-const ANALYSIS_SYSTEM_PROMPT = `당신은 한국 온라인 쇼핑 전문 AI입니다. 제공된 실제 상품 목록을 분석하여 소비자 관점의 인사이트를 제공하세요.
+const ANALYSIS_SYSTEM_PROMPT = `당신은 한국 온라인 쇼핑 전문 AI입니다. 제공된 실제 상품 목록 중 사용자 요청과 취향에 가장 부합하는 3~5개만 선별하여 분석하세요.
+- 제공된 목록을 전부 분석할 필요는 없습니다. 사용자 취향 프로필(가격 우선순위, 태그 등)이 주어졌다면 이를 최우선 기준으로 상품을 골라내세요
+- 예: 가성비 우선 취향이면 목록 중 가격이 낮은 상품 위주로, 프리미엄 우선 취향이면 가격이 높거나 브랜드 가치가 높은 상품 위주로 선별하세요
 - 제공된 실제 상품 데이터를 기반으로 현실적인 분석을 하세요
 - aiScore는 0-100 사이 정수로, 가장 추천되는 상품 1개만 recommended: true로 설정하세요
 - rating은 해당 카테고리 시장 평균을 참고하여 3.5~5.0 사이로 추정하세요
