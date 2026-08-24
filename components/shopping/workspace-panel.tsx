@@ -1,6 +1,6 @@
 'use client';
 
-import { LayoutGrid, Loader2, MessageSquareText, Table2 } from 'lucide-react';
+import { AlertCircle, LayoutGrid, Loader2, MessageSquareText, Table2 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 import { ComparisonTable } from './comparison-table';
@@ -19,7 +19,7 @@ function BlockHeading({ title, description }: { title: string; description: stri
 }
 
 export function WorkspacePanel() {
-  const { workspace, isAnalyzing, isNewChat } = useStore();
+  const { workspace, workspaceError, isAnalyzing, isNewChat } = useStore();
 
   const noData = workspace === null;
   const title = workspace?.title ?? '분석 워크스페이스';
@@ -50,6 +50,14 @@ export function WorkspacePanel() {
             <Loader2 className="mb-3 size-6 animate-spin text-muted-foreground" />
             <p className="text-sm font-medium text-foreground">상품 분석 중...</p>
             <p className="mt-1 text-xs text-muted-foreground">가격, 스펙, 리뷰를 종합하고 있어요</p>
+          </div>
+        ) : noData && workspaceError ? (
+          <div className="flex flex-col items-center justify-center py-24 text-center">
+            <div className="mb-3 flex size-12 items-center justify-center rounded-2xl bg-rose-50 dark:bg-rose-950/40">
+              <AlertCircle className="size-5 text-rose-500" />
+            </div>
+            <p className="text-sm font-medium text-foreground">{workspaceError}</p>
+            <p className="mt-1 text-xs text-muted-foreground">검색어를 조금 더 구체적으로 입력해보시면 도움이 돼요.</p>
           </div>
         ) : noData ? (
           <div className="flex flex-col items-center justify-center py-24 text-center">
