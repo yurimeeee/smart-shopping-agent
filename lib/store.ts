@@ -21,10 +21,12 @@ interface AppStore {
   setCurrentChatId: (id: string | null) => void;
 
   workspace: WorkspaceData | null;
+  workspaceError: string | null;
   isAnalyzing: boolean;
   isNewChat: boolean;
   theme: 'light' | 'dark';
   setWorkspace: (data: WorkspaceData | null) => void;
+  setWorkspaceError: (message: string | null) => void;
   setAnalyzing: (v: boolean) => void;
   setIsNewChat: (v: boolean) => void;
   toggleTheme: () => void;
@@ -42,10 +44,12 @@ export const useStore = create<AppStore>()(
       setCurrentChatId: (id) => set({ currentChatId: id }),
 
       workspace: null,
+      workspaceError: null,
       isAnalyzing: false,
       isNewChat: false,
       theme: 'light',
-      setWorkspace: (data) => set({ workspace: data }),
+      setWorkspace: (data) => set({ workspace: data, workspaceError: null }),
+      setWorkspaceError: (message) => set({ workspaceError: message }),
       setAnalyzing: (v) => set({ isAnalyzing: v }),
       setIsNewChat: (v) => set({ isNewChat: v }),
       toggleTheme: () => set((s) => ({ theme: s.theme === 'light' ? 'dark' : 'light' })),
@@ -57,6 +61,7 @@ export const useStore = create<AppStore>()(
         set({
           currentChatId: null,
           workspace: null,
+          workspaceError: null,
           isAnalyzing: false,
           isNewChat: false,
           tasteProfile: DEFAULT_TASTE,
