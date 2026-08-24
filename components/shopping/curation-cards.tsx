@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Bookmark, BookmarkCheck, Check, ExternalLink, Minus, Star } from 'lucide-react';
+import { Bookmark, BookmarkCheck, Check, ExternalLink, Minus, Search, Sparkles, Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -78,12 +78,20 @@ function ProductCard({
     >
       <div className="relative h-44 border-b border-zinc-100 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900">
         <ProductThumbnail product={product} />
-        {product.recommended ? (
-          <Badge className="absolute left-3 top-3 gap-1">
-            <Star className="size-3 fill-current" />
-            AI 1순위 추천
-          </Badge>
-        ) : null}
+        <div className="absolute left-3 top-3 flex flex-col items-start gap-1">
+          {product.recommended ? (
+            <Badge className="gap-1">
+              <Star className="size-3 fill-current" />
+              AI 1순위 추천
+            </Badge>
+          ) : null}
+          {product.estimated ? (
+            <Badge variant="outline" className="gap-1 border-amber-300 bg-amber-50 text-amber-700 dark:border-amber-700 dark:bg-amber-950/60 dark:text-amber-400">
+              <Sparkles className="size-3" />
+              AI 추정 상품
+            </Badge>
+          ) : null}
+        </div>
         <div className="absolute right-3 top-3 flex items-center gap-1.5">
           <button
             onClick={() => onToggleFavorite(product, favoriteDocId)}
@@ -169,12 +177,14 @@ function ProductCard({
             rel="noopener noreferrer"
           >
             <Button variant={product.recommended ? 'default' : 'outline'} size="sm" className="gap-1.5 text-xs">
-              상세 보기
-              <ExternalLink className="size-3" />
+              {product.estimated ? '네이버에서 찾아보기' : '상세 보기'}
+              {product.estimated ? <Search className="size-3" /> : <ExternalLink className="size-3" />}
             </Button>
           </a>
         </div>
-        <p className="mt-2 text-[11px] text-muted-foreground">{product.shipping}</p>
+        <p className="mt-2 text-[11px] text-muted-foreground">
+          {product.estimated ? 'AI가 추정한 참고용 정보로, 실제 판매 상품과 다를 수 있어요' : product.shipping}
+        </p>
       </div>
     </article>
   );
