@@ -8,32 +8,63 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { createConversation, addMessage, getMessages, saveAnalysis, getAnalysis } from '@/lib/firestore';
 import { useStore, type WorkspaceData } from '@/lib/store';
-import type { ProductItem, ProductComparisonMatrix, ReviewSummary } from '@/lib/types';
+import type { ProductItem, ProductComparisonMatrix, ReviewSummary, TasteProfile } from '@/lib/types';
 
+// "추천/비교" 의도가 뚜렷한 문장은 AI 분석(/api/products)을 우선 시도하고,
+// 그 외 일반 문장은 실검색(/api/search)을 우선 시도한다. 어느 쪽이든 결과가
+// 비면 나머지 한쪽으로 자동 폴백하므로, 이 목록에 없는 표현이라도 상품
+// 결과가 안 뜨는 일은 없다 — 우선순위를 정하는 힌트일 뿐 게이트가 아니다.
 const PRODUCT_KEYWORDS = [
   '추천',
   '비교',
   '상품',
   '제품',
   '뭐가 좋',
+  '뭐가좋',
+  '뭐 사',
+  '뭐사',
   '어떤 게',
   '어떤게',
   '어떤 거',
   '어떤거',
+  '어떤 걸',
+  '뭘 사',
   '사야',
   '살까',
+  '살만한',
   '구매',
+  '구입',
   '골라줘',
+  '골라주',
   '알려줘',
+  '알려주',
   '좋은 거',
   '좋은거',
+  '괜찮은',
   '리뷰',
   '인기',
   '베스트',
+  '가성비',
+  '가격',
+  '스펙',
+  '필요해',
+  '필요한',
+  '찾아줘',
+  '찾고 있',
+  '있을까',
+  '뭐야',
 ];
 
 function isProductQuery(text: string): boolean {
   return PRODUCT_KEYWORDS.some((kw) => text.includes(kw));
+}
+
+/** priceBalance가 낮을수록(가성비 우선) 저가순, 높을수록(프리미엄 우선) 고가순으로 정렬 */
+function sortForTaste(tasteProfile?: TasteProfile): 'asc' | 'dsc' | 'sim' {
+  if (!tasteProfile) return 'sim';
+  if (tasteProfile.priceBalance <= 35) return 'asc';
+  if (tasteProfile.priceBalance >= 65) return 'dsc';
+  return 'sim';
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -92,6 +123,35 @@ function naverItemsToWorkspace(query: string, items: any[]): WorkspaceData {
       oneLineSummary: 'AI 분석에 실패해 네이버 쇼핑 검색 결과를 표시합니다.',
     },
   };
+}
+
+async function fetchAiRecommendation(query: string, tasteProfile?: TasteProfile): Promise<WorkspaceData | null> {
+  try {
+    const r = await fetch('/api/products', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query, tasteProfile }),
+    });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const raw: any = await r.json().catch(() => ({}));
+    if (!r.ok || raw.error || !raw.products?.length) return null;
+    return toWorkspaceData(raw);
+  } catch {
+    return null;
+  }
+}
+
+async function fetchPlainSearch(query: string, tasteProfile?: TasteProfile): Promise<WorkspaceData | null> {
+  try {
+    const sort = sortForTaste(tasteProfile);
+    const sr = await fetch(`/api/search?q=${encodeURIComponent(query)}&display=10&sort=${sort}`);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const sd: any = await sr.json().catch(() => ({ items: [] }));
+    if (!sd.items?.length) return null;
+    return naverItemsToWorkspace(query, sd.items);
+  } catch {
+    return null;
+  }
 }
 
 function StepRow({ step }: { step: ReasoningStep }) {
@@ -179,7 +239,7 @@ export function ChatPanel({ userId, chatId, onChatCreate }: ChatPanelProps) {
   const [isLoading, setIsLoading] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const createdChatIdRef = useRef<string | null>(null);
-  const { setWorkspace, setAnalyzing, setIsNewChat, tasteProfile } = useStore();
+  const { setWorkspace, setWorkspaceError, setAnalyzing, setIsNewChat, tasteProfile } = useStore();
 
   const scrollToBottom = () => {
     const viewport = scrollAreaRef.current?.querySelector('[data-slot="scroll-area-viewport"]');
@@ -282,44 +342,28 @@ export function ChatPanel({ userId, chatId, onChatCreate }: ChatPanelProps) {
     }
 
     // 4. chat 완료 후 워크스페이스 채우기
+    // "추천/비교" 의도면 AI 분석을 우선, 그 외엔 실검색을 우선 시도하고
+    // 결과가 비면 나머지 한쪽으로 자동 폴백한다 — 키워드에 안 걸려도 놓치지 않음.
     const cid = activeChatId;
     setAnalyzing(true);
+    setWorkspaceError(null);
     try {
-      if (isProductQuery(userContent)) {
-        // 상품 쿼리 → products API 우선, 실패 시 Naver 폴백
-        const r = await fetch('/api/products', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ query: userContent, tasteProfile }),
-        });
-        const raw = await r.json().catch(() => ({}));
+      const productFirst = isProductQuery(userContent);
+      const primary = productFirst ? fetchAiRecommendation : fetchPlainSearch;
+      const secondary = productFirst ? fetchPlainSearch : fetchAiRecommendation;
 
-        if (!r.ok || raw.error || !raw.products?.length) {
-          const sr = await fetch(`/api/search?q=${encodeURIComponent(userContent)}&display=10&sort=sim`);
-          const sd = await sr.json().catch(() => ({ items: [] }));
-          if (sd.items?.length > 0) {
-            const ws = naverItemsToWorkspace(userContent, sd.items);
-            setWorkspace(ws);
-            await saveAnalysis(userId, cid, ws);
-          }
-          return;
-        }
+      let ws = await primary(userContent, tasteProfile);
+      if (!ws) ws = await secondary(userContent, tasteProfile);
 
-        const ws = toWorkspaceData(raw);
+      if (ws) {
         setWorkspace(ws);
         await saveAnalysis(userId, cid, ws);
       } else {
-        // 일반 쿼리 → products API 미호출, Naver 검색으로 바로 표시
-        const sr = await fetch(`/api/search?q=${encodeURIComponent(userContent)}&display=10&sort=sim`);
-        const sd = await sr.json().catch(() => ({ items: [] }));
-        if (sd.items?.length > 0) {
-          const ws = naverItemsToWorkspace(userContent, sd.items);
-          setWorkspace(ws);
-          await saveAnalysis(userId, cid, ws);
-        }
+        setWorkspaceError('상품 정보를 가져오지 못했어요. 다른 검색어로 다시 시도해 주세요.');
       }
     } catch (e) {
       console.error('[workspace]', e);
+      setWorkspaceError('분석 중 오류가 발생했어요. 잠시 후 다시 시도해 주세요.');
     } finally {
       setAnalyzing(false);
     }
