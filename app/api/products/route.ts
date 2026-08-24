@@ -304,10 +304,12 @@ export async function POST(req: Request) {
     if (!text) return Response.json({ error: 'Empty response' }, { status: 502 });
 
     const data = JSON.parse(text);
-    const productIds = data.products.map((p: { id: string }) => p.id);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const products = data.products.map((p: any) => ({ ...p, estimated: true }));
+    const productIds = products.map((p: { id: string }) => p.id);
     const comparisonMatrix = buildComparisonMatrix(productIds, data.comparisonSpecs);
 
-    return Response.json({ title: data.title, products: data.products, comparisonMatrix, reviewSummary: data.reviewSummary });
+    return Response.json({ title: data.title, products, comparisonMatrix, reviewSummary: data.reviewSummary });
 
   } catch (err) {
     console.error('[products/route] Gemini error, trying Naver fallback:', err);
