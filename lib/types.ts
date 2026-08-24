@@ -34,6 +34,8 @@ export interface ProductItem {
   recommended?: boolean
   link?: string
   mallName?: string
+  /** true면 실검색 없이 AI가 통째로 지어낸 참고용 상품(실제 판매 정보 아님) */
+  estimated?: boolean
 }
 
 export interface ComparisonSpec {
