@@ -1,6 +1,6 @@
 'use client';
 
-import { AlertCircle, LayoutGrid, Loader2, MessageSquareText, Table2 } from 'lucide-react';
+import { AlertCircle, LayoutGrid, Loader2, MessageSquareText, Sparkles, Table2 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 import { ComparisonTable } from './comparison-table';
@@ -24,6 +24,7 @@ export function WorkspacePanel() {
   const noData = workspace === null;
   const title = workspace?.title ?? '분석 워크스페이스';
   const productCount = workspace?.products.length ?? 0;
+  const hasEstimated = workspace?.products.some((p) => p.estimated) ?? false;
 
   return (
     <section className="flex h-full min-h-0 flex-col bg-zinc-50/50 dark:bg-zinc-900/50">
@@ -69,6 +70,12 @@ export function WorkspacePanel() {
           </div>
         ) : (
           <Tabs defaultValue="curation" className="gap-5">
+            {hasEstimated && (
+              <div className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3.5 py-2.5 text-xs text-amber-800 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-300">
+                <Sparkles className="mt-0.5 size-3.5 shrink-0" />
+                <p>실시간 쇼핑 검색이 연결되지 않아, 아래 상품은 AI가 시세를 참고해 추정한 예시입니다. 실제 재고·가격·이미지와 다를 수 있어요.</p>
+              </div>
+            )}
             <TabsList className="w-full justify-start">
               <TabsTrigger value="curation" className="flex-none px-3">
                 <LayoutGrid className="hidden sm:block size-4" />
